@@ -27,6 +27,22 @@
       <button id="novo-curriculo" class="btn btn-primary" type="button">+ Criar novo currículo</button>
     </section>
 
+    <section class="panel" style="margin-bottom: 22px;">
+      <div class="section-head compact">
+        <div>
+          <p class="small-label">BACKUP DOS SEUS DADOS</p>
+          <h2>Salvar ou recuperar seus currículos</h2>
+          <p>Enquanto o sistema ainda não possui login, use o arquivo de backup para guardar seus currículos e continuar o trabalho em outro computador.</p>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button id="baixar-backup" class="btn btn-primary" type="button">⬇ Baixar arquivo</button>
+        <button id="carregar-backup" class="btn btn-secondary" type="button">⬆ Carregar arquivo</button>
+        <input id="arquivo-backup" type="file" accept=".json,application/json" hidden>
+      </div>
+      <p style="margin-bottom:0;"><strong>Importante:</strong> faça o download do arquivo antes de trocar de computador ou limpar os dados do navegador.</p>
+    </section>
+
     <section class="panel saved-panel">
       <div class="section-head compact">
         <div>
@@ -130,5 +146,6 @@
 
   <footer class="footer"><p>Meu Futuro Profissional • Projeto de Carreira e Competências</p></footer>
   <script src="script.js"></script>
+  <script src="backup.js"></script>
 </body>
 </html>
