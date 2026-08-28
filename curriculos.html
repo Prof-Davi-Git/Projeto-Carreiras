@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meus Currículos | Meu Futuro Profissional</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="curriculos.css">
 </head>
 <body>
   <header class="topbar">
@@ -56,31 +57,16 @@
         <div class="form-section">
           <div class="form-section-title">
             <span>01</span>
-            <div>
-              <h3>Identificação do currículo</h3>
-              <p>Dê um nome para diferenciar esta versão das outras.</p>
-            </div>
+            <div><h3>Identificação do currículo</h3><p>Dê um nome para diferenciar esta versão das outras.</p></div>
           </div>
           <div class="form-grid">
-            <div class="form-group">
-              <label for="tituloCurriculo">Nome desta versão</label>
-              <input id="tituloCurriculo" type="text" placeholder="Ex.: Currículo - Suporte de TI" required>
-            </div>
-            <div class="form-group">
-              <label for="vagaAlvo">Vaga ou área de interesse</label>
-              <input id="vagaAlvo" type="text" placeholder="Ex.: Assistente de Suporte de TI">
-            </div>
+            <div class="form-group"><label for="tituloCurriculo">Nome desta versão</label><input id="tituloCurriculo" type="text" placeholder="Ex.: Currículo - Suporte de TI" required></div>
+            <div class="form-group"><label for="vagaAlvo">Vaga ou área de interesse</label><input id="vagaAlvo" type="text" placeholder="Ex.: Assistente de Suporte de TI"></div>
           </div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">
-            <span>02</span>
-            <div>
-              <h3>Dados pessoais e contato</h3>
-              <p>Use informações profissionais que possam aparecer no currículo.</p>
-            </div>
-          </div>
+          <div class="form-section-title"><span>02</span><div><h3>Dados pessoais e contato</h3><p>Use informações profissionais que possam aparecer no currículo.</p></div></div>
           <div class="form-grid">
             <div class="form-group"><label for="nome">Nome completo</label><input id="nome" type="text" required></div>
             <div class="form-group"><label for="email">E-mail</label><input id="email" type="email"></div>
@@ -92,13 +78,7 @@
         </div>
 
         <div class="form-section">
-          <div class="form-section-title">
-            <span>03</span>
-            <div>
-              <h3>Apresentação profissional</h3>
-              <p>Mostre de forma objetiva quem você é e o que procura.</p>
-            </div>
-          </div>
+          <div class="form-section-title"><span>03</span><div><h3>Apresentação profissional</h3><p>Mostre de forma objetiva quem você é e o que procura.</p></div></div>
           <div class="form-grid">
             <div class="form-group full"><label for="objetivo">Objetivo profissional</label><textarea id="objetivo" placeholder="Ex.: Busco uma oportunidade na área de suporte de TI..."></textarea></div>
             <div class="form-group full"><label for="resumo">Resumo profissional</label><textarea id="resumo" placeholder="Fale brevemente sobre seu perfil, interesses, pontos fortes e conhecimentos."></textarea></div>
@@ -106,58 +86,37 @@
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>04</span><div><h3>Formação acadêmica</h3><p>Adicione quantas formações forem necessárias.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="formacoes">+ Adicionar formação</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>04</span><div><h3>Formação acadêmica</h3><p>Adicione quantas formações forem necessárias.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="formacoes">+ Adicionar formação</button></div>
           <div id="formacoes" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>05</span><div><h3>Experiências</h3><p>Podem ser empregos, estágios, trabalhos autônomos ou experiências relevantes.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="experiencias">+ Adicionar experiência</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>05</span><div><h3>Experiências</h3><p>Podem ser empregos, estágios, trabalhos autônomos ou experiências relevantes.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="experiencias">+ Adicionar experiência</button></div>
           <div id="experiencias" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>06</span><div><h3>Cursos e certificações</h3><p>Inclua cursos livres, técnicos, certificados e capacitações.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="cursos">+ Adicionar curso</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>06</span><div><h3>Cursos e certificações</h3><p>Inclua cursos livres, técnicos, certificados e capacitações.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="cursos">+ Adicionar curso</button></div>
           <div id="cursos" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>07</span><div><h3>Habilidades técnicas</h3><p>Adicione quantas habilidades quiser.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="habilidades">+ Adicionar habilidade</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>07</span><div><h3>Habilidades técnicas</h3><p>Adicione quantas habilidades quiser.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="habilidades">+ Adicionar habilidade</button></div>
           <div id="habilidades" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>08</span><div><h3>Competências profissionais</h3><p>Ex.: comunicação, organização, liderança, trabalho em equipe.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="competencias">+ Adicionar competência</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>08</span><div><h3>Competências profissionais</h3><p>Ex.: comunicação, organização, liderança, trabalho em equipe.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="competencias">+ Adicionar competência</button></div>
           <div id="competencias" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>09</span><div><h3>Idiomas</h3><p>Informe o idioma e seu nível atual.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="idiomas">+ Adicionar idioma</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>09</span><div><h3>Idiomas</h3><p>Informe o idioma e seu nível atual.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="idiomas">+ Adicionar idioma</button></div>
           <div id="idiomas" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between">
-            <div class="title-with-number"><span>10</span><div><h3>Projetos e atividades relevantes</h3><p>Use esta área para projetos escolares, pessoais ou profissionais.</p></div></div>
-            <button class="btn btn-secondary btn-small add-item" type="button" data-section="projetos">+ Adicionar projeto</button>
-          </div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>10</span><div><h3>Projetos e atividades relevantes</h3><p>Use esta área para projetos escolares, pessoais ou profissionais.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="projetos">+ Adicionar projeto</button></div>
           <div id="projetos" class="repeat-list"></div>
         </div>
 
@@ -169,10 +128,7 @@
     </section>
   </main>
 
-  <footer class="footer">
-    <p>Meu Futuro Profissional • Projeto de Carreira e Competências</p>
-  </footer>
-
+  <footer class="footer"><p>Meu Futuro Profissional • Projeto de Carreira e Competências</p></footer>
   <script src="script.js"></script>
 </body>
 </html>
