@@ -3,86 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Perfil | Meu Futuro Profissional</title>
+  <meta http-equiv="refresh" content="0; url=curriculos.html">
+  <title>Redirecionando | Meu Futuro Profissional</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="index.html">Meu Futuro Profissional</a>
-    <nav class="menu" aria-label="Menu principal">
-      <a href="index.html">Início</a>
-      <a class="active" href="perfil.html">Meu Perfil</a>
-      <a href="curriculos.html">Currículos</a>
-      <a href="vagas.html">Vagas</a>
-      <a href="entrevistas.html">Entrevistas</a>
-      <a href="preparacao.html">Preparação</a>
-    </nav>
-  </header>
-
   <main class="container">
-    <section class="page-hero">
-      <p class="small-label">ETAPA 1</p>
-      <h1>Meu Perfil Profissional</h1>
-      <p>Esta página será a base da sua jornada. Pense em quem você é hoje, onde gostaria de trabalhar e quais competências já possui ou ainda deseja desenvolver.</p>
-    </section>
-
-    <section class="two-columns">
-      <div class="panel">
-        <h2>Preencha seu perfil</h2>
-        <form id="perfil-form">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="nome">Nome completo</label>
-              <input id="nome" type="text" placeholder="Digite seu nome" required>
-            </div>
-
-            <div class="form-group">
-              <label for="area">Área profissional de interesse</label>
-              <input id="area" type="text" placeholder="Ex.: Tecnologia, Administração, Atendimento..." required>
-            </div>
-
-            <div class="form-group full">
-              <label for="objetivo">Objetivo profissional</label>
-              <textarea id="objetivo" placeholder="Explique de forma curta o que você busca profissionalmente." required></textarea>
-            </div>
-
-            <div class="form-group full">
-              <label for="competencias">3 competências que você acredita possuir</label>
-              <textarea id="competencias" placeholder="Ex.: organização, comunicação, trabalho em equipe..." required></textarea>
-            </div>
-
-            <div class="form-group full">
-              <label for="desenvolver">3 competências que você gostaria de desenvolver</label>
-              <textarea id="desenvolver" placeholder="Pense no que você ainda quer melhorar para o mercado de trabalho." required></textarea>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button class="btn btn-primary" type="submit">Salvar meu perfil</button>
-            <a class="btn btn-secondary" href="index.html">Voltar ao início</a>
-          </div>
-          <div id="aviso-salvo" class="notice" role="status">Perfil salvo neste navegador.</div>
-        </form>
-      </div>
-
-      <aside class="panel">
-        <span class="badge">ATIVIDADE ATUAL</span>
-        <h3>Antes de preencher</h3>
-        <p>Não existe um perfil perfeito. O objetivo é refletir sobre seu momento atual e acompanhar sua evolução durante o projeto.</p>
-        <ul class="list-clean">
-          <li>Evite respostas de uma única palavra.</li>
-          <li>Seja sincero sobre seus pontos fortes.</li>
-          <li>Pense também no que precisa desenvolver.</li>
-          <li>Use linguagem profissional e objetiva.</li>
-        </ul>
-      </aside>
+    <section class="panel empty-state">
+      <span class="icon">📄</span>
+      <h1>O Perfil Profissional agora faz parte de Meus Currículos.</h1>
+      <p>Você será direcionado automaticamente para a nova área.</p>
+      <a class="btn btn-primary" href="curriculos.html">Ir para Meus Currículos</a>
     </section>
   </main>
-
-  <footer class="footer">
-    <p>Meu Futuro Profissional • Projeto de Carreira e Competências</p>
-  </footer>
-
-  <script src="script.js"></script>
 </body>
 </html>
