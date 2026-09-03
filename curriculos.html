@@ -3,58 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meus Currículos | Meu Futuro Profissional</title>
+  <title>Currículos | Meu Futuro Profissional</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="curriculos.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="index.html">Meu Futuro Profissional</a>
+    <a class="brand" href="curriculos.html">Meu Futuro Profissional</a>
     <nav class="menu" aria-label="Menu principal">
-      <a href="index.html">Início</a>
-      <a class="active" href="curriculos.html">Meus Currículos</a>
+      <a class="active" href="curriculos.html">Currículos</a>
       <a href="vagas.html">Vagas</a>
       <a href="entrevistas.html">Entrevistas</a>
-      <a href="preparacao.html">Preparação</a>
     </nav>
   </header>
 
-  <main class="container">
-    <section class="page-hero curriculum-hero">
-      <p class="small-label">ETAPA 1</p>
-      <h1>Meus Currículos</h1>
-      <p>Crie sua base profissional e salve quantas versões precisar. Cada currículo pode ser adaptado para uma vaga diferente.</p>
+  <main class="container curriculum-page">
+    <section class="page-hero direct-hero">
+      <div>
+        <p class="small-label">MEUS CURRÍCULOS</p>
+        <h1>Crie, personalize e exporte seu currículo.</h1>
+        <p>Monte versões diferentes para cada vaga, escolha um visual profissional e gere o documento pronto para enviar à empresa.</p>
+      </div>
       <button id="novo-curriculo" class="btn btn-primary" type="button">+ Criar novo currículo</button>
     </section>
 
-    <section class="panel" style="margin-bottom: 22px;">
-      <div class="section-head compact">
-        <div>
-          <p class="small-label">BACKUP DOS SEUS DADOS</p>
-          <h2>Salvar ou recuperar seus currículos</h2>
-          <p>Enquanto o sistema ainda não possui login, use o arquivo de backup para guardar seus currículos e continuar o trabalho em outro computador.</p>
-        </div>
+    <section class="panel backup-bar">
+      <div>
+        <strong>Backup temporário</strong>
+        <span>Enquanto não usamos login/Firebase, guarde um arquivo com seus currículos.</span>
       </div>
-      <div class="form-actions">
-        <button id="baixar-backup" class="btn btn-primary" type="button">⬇ Baixar arquivo</button>
-        <button id="carregar-backup" class="btn btn-secondary" type="button">⬆ Carregar arquivo</button>
+      <div class="backup-actions">
+        <button id="baixar-backup" class="btn btn-secondary btn-small" type="button">Baixar backup</button>
+        <button id="carregar-backup" class="btn btn-secondary btn-small" type="button">Carregar backup</button>
         <input id="arquivo-backup" type="file" accept=".json,application/json" hidden>
       </div>
-      <p style="margin-bottom:0;"><strong>Importante:</strong> faça o download do arquivo antes de trocar de computador ou limpar os dados do navegador.</p>
     </section>
 
     <section class="panel saved-panel">
       <div class="section-head compact">
         <div>
-          <p class="small-label">SALVOS NESTE NAVEGADOR</p>
-          <h2>Seus currículos</h2>
+          <p class="small-label">CURRÍCULOS SALVOS</p>
+          <h2>Suas versões</h2>
         </div>
         <span id="contador-curriculos" class="pill">0 currículos</span>
       </div>
       <div id="lista-curriculos" class="saved-grid"></div>
       <div id="sem-curriculos" class="empty-inline">
         <strong>Nenhum currículo salvo ainda.</strong>
-        <span>Crie o primeiro currículo usando o botão acima.</span>
+        <span>Clique em “Criar novo currículo” para começar.</span>
       </div>
     </section>
 
@@ -70,19 +66,81 @@
       <form id="curriculo-form">
         <input id="curriculo-id" type="hidden">
 
-        <div class="form-section">
+        <div class="form-section appearance-section">
           <div class="form-section-title">
             <span>01</span>
-            <div><h3>Identificação do currículo</h3><p>Dê um nome para diferenciar esta versão das outras.</p></div>
+            <div>
+              <h3>Visual do currículo</h3>
+              <p>Escolha um layout e uma combinação de cor. Você poderá visualizar o resultado antes de exportar.</p>
+            </div>
           </div>
-          <div class="form-grid">
-            <div class="form-group"><label for="tituloCurriculo">Nome desta versão</label><input id="tituloCurriculo" type="text" placeholder="Ex.: Currículo - Suporte de TI" required></div>
-            <div class="form-group"><label for="vagaAlvo">Vaga ou área de interesse</label><input id="vagaAlvo" type="text" placeholder="Ex.: Assistente de Suporte de TI"></div>
+
+          <div class="appearance-grid">
+            <div>
+              <label class="option-label">Layout</label>
+              <div class="layout-options">
+                <label class="choice-card">
+                  <input type="radio" name="layout" value="classico" checked>
+                  <span class="layout-mini mini-classico"><i></i><i></i><i></i></span>
+                  <strong>Clássico</strong>
+                  <small>Tradicional e objetivo</small>
+                </label>
+                <label class="choice-card">
+                  <input type="radio" name="layout" value="moderno">
+                  <span class="layout-mini mini-moderno"><i></i><i></i><i></i></span>
+                  <strong>Moderno</strong>
+                  <small>Visual com coluna lateral</small>
+                </label>
+                <label class="choice-card">
+                  <input type="radio" name="layout" value="compacto">
+                  <span class="layout-mini mini-compacto"><i></i><i></i><i></i></span>
+                  <strong>Compacto</strong>
+                  <small>Mais informação por página</small>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="option-label">Cor principal</label>
+              <div class="color-options">
+                <label class="color-choice"><input type="radio" name="tema" value="azul" checked><span class="swatch swatch-blue"></span><strong>Azul</strong></label>
+                <label class="color-choice"><input type="radio" name="tema" value="verde"><span class="swatch swatch-green"></span><strong>Verde</strong></label>
+                <label class="color-choice"><input type="radio" name="tema" value="vinho"><span class="swatch swatch-wine"></span><strong>Vinho</strong></label>
+                <label class="color-choice"><input type="radio" name="tema" value="grafite"><span class="swatch swatch-graphite"></span><strong>Grafite</strong></label>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title"><span>02</span><div><h3>Dados pessoais e contato</h3><p>Use informações profissionais que possam aparecer no currículo.</p></div></div>
+          <div class="form-section-title">
+            <span>02</span>
+            <div><h3>Identificação desta versão</h3><p>Dê um nome para você saber para qual vaga este currículo foi preparado.</p></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group"><label for="tituloCurriculo">Nome desta versão</label><input id="tituloCurriculo" type="text" placeholder="Ex.: Currículo - Suporte de TI" required></div>
+            <div class="form-group"><label for="vagaAlvo">Vaga ou área desejada</label><input id="vagaAlvo" type="text" placeholder="Ex.: Assistente de Suporte de TI"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">
+            <span>03</span>
+            <div><h3>Foto profissional</h3><p>A foto é opcional. Se usar, escolha uma imagem adequada para um processo seletivo.</p></div>
+          </div>
+          <div class="photo-editor">
+            <div class="photo-preview-wrap"><img id="foto-preview" alt="Prévia da foto profissional"><span id="foto-placeholder">Sem foto</span></div>
+            <div class="photo-controls">
+              <label class="btn btn-secondary" for="foto-arquivo">Escolher foto</label>
+              <input id="foto-arquivo" type="file" accept="image/*" hidden>
+              <button id="remover-foto" class="btn btn-secondary btn-small" type="button">Remover foto</button>
+              <p><strong>Use uma foto profissional:</strong> rosto visível, boa iluminação, fundo neutro e aparência adequada ao ambiente de trabalho. Evite filtros, selfies informais e fotos de festas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title"><span>04</span><div><h3>Dados pessoais e contato</h3><p>Informe apenas os dados necessários para a empresa entrar em contato.</p></div></div>
           <div class="form-grid">
             <div class="form-group"><label for="nome">Nome completo</label><input id="nome" type="text" required></div>
             <div class="form-group"><label for="email">E-mail</label><input id="email" type="email"></div>
@@ -94,57 +152,75 @@
         </div>
 
         <div class="form-section">
-          <div class="form-section-title"><span>03</span><div><h3>Apresentação profissional</h3><p>Mostre de forma objetiva quem você é e o que procura.</p></div></div>
+          <div class="form-section-title"><span>05</span><div><h3>Apresentação profissional</h3><p>Mostre de forma clara quem você é e o que busca profissionalmente.</p></div></div>
           <div class="form-grid">
             <div class="form-group full"><label for="objetivo">Objetivo profissional</label><textarea id="objetivo" placeholder="Ex.: Busco uma oportunidade na área de suporte de TI..."></textarea></div>
-            <div class="form-group full"><label for="resumo">Resumo profissional</label><textarea id="resumo" placeholder="Fale brevemente sobre seu perfil, interesses, pontos fortes e conhecimentos."></textarea></div>
+            <div class="form-group full"><label for="resumo">Resumo profissional</label><textarea id="resumo" placeholder="Fale brevemente sobre seu perfil, conhecimentos, interesses e pontos fortes."></textarea></div>
           </div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>04</span><div><h3>Formação acadêmica</h3><p>Adicione quantas formações forem necessárias.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="formacoes">+ Adicionar formação</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>06</span><div><h3>Formação acadêmica</h3><p>Adicione quantas formações forem necessárias.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="formacoes">+ Adicionar formação</button></div>
           <div id="formacoes" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>05</span><div><h3>Experiências</h3><p>Podem ser empregos, estágios, trabalhos autônomos ou experiências relevantes.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="experiencias">+ Adicionar experiência</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>07</span><div><h3>Experiências</h3><p>Empregos, estágios, trabalhos autônomos ou outras experiências relevantes.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="experiencias">+ Adicionar experiência</button></div>
           <div id="experiencias" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>06</span><div><h3>Cursos e certificações</h3><p>Inclua cursos livres, técnicos, certificados e capacitações.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="cursos">+ Adicionar curso</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>08</span><div><h3>Cursos e certificações</h3><p>Inclua cursos livres, técnicos, certificados e capacitações.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="cursos">+ Adicionar curso</button></div>
           <div id="cursos" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>07</span><div><h3>Habilidades técnicas</h3><p>Adicione quantas habilidades quiser.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="habilidades">+ Adicionar habilidade</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>09</span><div><h3>Habilidades técnicas</h3><p>Adicione quantas habilidades quiser.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="habilidades">+ Adicionar habilidade</button></div>
           <div id="habilidades" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>08</span><div><h3>Competências profissionais</h3><p>Ex.: comunicação, organização, liderança, trabalho em equipe.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="competencias">+ Adicionar competência</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>10</span><div><h3>Competências profissionais</h3><p>Ex.: comunicação, organização, liderança e trabalho em equipe.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="competencias">+ Adicionar competência</button></div>
           <div id="competencias" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>09</span><div><h3>Idiomas</h3><p>Informe o idioma e seu nível atual.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="idiomas">+ Adicionar idioma</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>11</span><div><h3>Idiomas</h3><p>Informe o idioma e seu nível atual.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="idiomas">+ Adicionar idioma</button></div>
           <div id="idiomas" class="repeat-list"></div>
         </div>
 
         <div class="form-section">
-          <div class="form-section-title row-between"><div class="title-with-number"><span>10</span><div><h3>Projetos e atividades relevantes</h3><p>Use esta área para projetos escolares, pessoais ou profissionais.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="projetos">+ Adicionar projeto</button></div>
+          <div class="form-section-title row-between"><div class="title-with-number"><span>12</span><div><h3>Projetos e atividades relevantes</h3><p>Use esta área para projetos escolares, pessoais ou profissionais.</p></div></div><button class="btn btn-secondary btn-small add-item" type="button" data-section="projetos">+ Adicionar projeto</button></div>
           <div id="projetos" class="repeat-list"></div>
         </div>
 
         <div class="sticky-actions">
           <span id="aviso-salvo" class="notice-inline">Currículo salvo.</span>
+          <button id="salvar-visualizar" class="btn btn-secondary" type="button">Salvar e visualizar</button>
           <button class="btn btn-primary" type="submit">Salvar currículo</button>
         </div>
       </form>
     </section>
   </main>
 
-  <footer class="footer"><p>Meu Futuro Profissional • Projeto de Carreira e Competências</p></footer>
+  <div id="curriculo-preview-modal" class="preview-modal hidden" role="dialog" aria-modal="true" aria-label="Visualização do currículo">
+    <div class="preview-toolbar">
+      <div>
+        <strong>Visualização do currículo</strong>
+        <span>Confira antes de enviar para uma empresa.</span>
+      </div>
+      <div class="preview-toolbar-actions">
+        <button id="fechar-preview" class="btn btn-secondary" type="button">Fechar</button>
+        <button id="imprimir-curriculo" class="btn btn-primary" type="button">Exportar / Salvar PDF</button>
+      </div>
+    </div>
+    <div class="preview-stage">
+      <article id="curriculo-folha" class="resume-sheet layout-classico tema-azul"></article>
+    </div>
+  </div>
+
+  <footer class="footer"><p>Meu Futuro Profissional • Currículos, vagas e entrevistas</p></footer>
+
   <script src="script.js"></script>
   <script src="backup.js"></script>
 </body>
