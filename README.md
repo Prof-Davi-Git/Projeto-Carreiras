@@ -1,22 +1,25 @@
-# Projeto-Carreiras
+# Meu Futuro Profissional
 
-## Meu Futuro Profissional
+Projeto da disciplina **Carreira e Competências para o Mercado de Trabalho**.
 
-Projeto didático da disciplina **Carreira e Competências para o Mercado de Trabalho**.
+O site foi simplificado para três áreas principais:
 
-O objetivo é construir, por etapas, um portal em que cada aluno desenvolva seu perfil profissional, crie currículos específicos para vagas, acompanhe entrevistas e se prepare para situações reais do mercado de trabalho.
+- **Currículos** — criação de várias versões de currículo, personalização de layout e cores, foto profissional, visualização pronta e exportação para PDF.
+- **Vagas** — oportunidades definidas pelo professor para que os alunos preparem currículos direcionados.
+- **Entrevistas** — agenda das entrevistas e orientações de preparação.
 
-### Etapa atual — Perfil Profissional
+## Currículos
 
-Nesta primeira etapa, o aluno pode:
+Cada aluno pode criar e salvar diferentes versões do currículo para vagas diferentes. O editor permite adicionar livremente formação, experiências, cursos, habilidades, competências, idiomas e projetos.
 
-- acessar o painel do projeto;
-- preencher seu perfil profissional;
-- informar área de interesse e objetivo profissional;
-- registrar competências que já possui;
-- registrar competências que deseja desenvolver;
-- salvar os dados localmente no navegador.
+Há três layouts prontos: **Clássico, Moderno e Compacto**. Também existem quatro temas de cor: **Azul, Verde, Vinho e Grafite**.
 
-As áreas de **Currículos**, **Vagas**, **Entrevistas** e **Preparação** serão liberadas nas próximas etapas.
+A foto é opcional e deve ter aparência profissional.
 
-> Nesta versão os dados são salvos apenas no navegador usando `localStorage`. Em uma etapa futura o projeto será conectado a um banco de dados para permitir login, envio de currículos e acesso do professor/recrutador.
+O botão **Visualizar** mostra o currículo no formato final de documento. A opção **Exportar / Salvar PDF** utiliza a impressão do navegador já preparada para tamanho A4.
+
+## Armazenamento temporário
+
+Enquanto o Firebase ainda não estiver configurado, os currículos ficam salvos no `localStorage` do navegador. Os botões **Baixar backup** e **Carregar backup** permitem transportar os dados entre computadores.
+
+ futuramente o projeto poderá utilizar Firebase para login, armazenamento dos currículos e envio das versões escolhidas ao professor/recrutador.
