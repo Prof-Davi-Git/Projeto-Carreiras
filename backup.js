@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const layoutStylesheet = document.createElement("link");
+  layoutStylesheet.rel = "stylesheet";
+  layoutStylesheet.href = "layouts-distintos.css";
+  document.head.appendChild(layoutStylesheet);
+
   const STORAGE_KEY = "curriculosProfissionais";
   const baixar = document.querySelector("#baixar-backup");
   const carregar = document.querySelector("#carregar-backup");
