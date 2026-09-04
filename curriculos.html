@@ -22,7 +22,7 @@
       <div>
         <p class="small-label">MEUS CURRÍCULOS</p>
         <h1>Crie, personalize e exporte seu currículo.</h1>
-        <p>Monte versões diferentes para cada vaga, escolha um visual profissional e gere o documento pronto para enviar à empresa.</p>
+        <p>Monte versões diferentes para cada vaga, escolha um dos modelos profissionais e visualize o documento antes de enviar para uma empresa.</p>
       </div>
       <button id="novo-curriculo" class="btn btn-primary" type="button">+ Criar novo currículo</button>
     </section>
@@ -70,32 +70,40 @@
           <div class="form-section-title">
             <span>01</span>
             <div>
-              <h3>Visual do currículo</h3>
-              <p>Escolha um layout e uma combinação de cor. Você poderá visualizar o resultado antes de exportar.</p>
+              <h3>Escolha o modelo do currículo</h3>
+              <p>Os três modelos organizam as mesmas informações de formas bem diferentes. Você poderá visualizar antes de exportar.</p>
             </div>
           </div>
 
           <div class="appearance-grid">
             <div>
-              <label class="option-label">Layout</label>
+              <label class="option-label">Modelo</label>
               <div class="layout-options">
                 <label class="choice-card">
-                  <input type="radio" name="layout" value="classico" checked>
-                  <span class="layout-mini mini-classico"><i></i><i></i><i></i></span>
-                  <strong>Clássico</strong>
-                  <small>Tradicional e objetivo</small>
+                  <input type="radio" name="layout" value="moderno" checked>
+                  <span class="layout-mini mini-moderno">
+                    <i class="mini-side"></i><i class="mini-head"></i><i class="mini-line a"></i><i class="mini-line b"></i><i class="mini-line c"></i>
+                  </span>
+                  <strong>Moderno Lateral</strong>
+                  <small>Barra lateral escura e conteúdo em destaque.</small>
                 </label>
-                <label class="choice-card">
-                  <input type="radio" name="layout" value="moderno">
-                  <span class="layout-mini mini-moderno"><i></i><i></i><i></i></span>
-                  <strong>Moderno</strong>
-                  <small>Visual com coluna lateral</small>
-                </label>
+
                 <label class="choice-card">
                   <input type="radio" name="layout" value="compacto">
-                  <span class="layout-mini mini-compacto"><i></i><i></i><i></i></span>
-                  <strong>Compacto</strong>
-                  <small>Mais informação por página</small>
+                  <span class="layout-mini mini-compacto">
+                    <i class="mini-card-head"></i><i class="mini-box one"></i><i class="mini-box two"></i><i class="mini-box three"></i>
+                  </span>
+                  <strong>Profissional Visual</strong>
+                  <small>Blocos organizados, cartões e leitura rápida.</small>
+                </label>
+
+                <label class="choice-card">
+                  <input type="radio" name="layout" value="classico">
+                  <span class="layout-mini mini-classico">
+                    <i class="mini-title"></i><i class="mini-rule"></i><i class="mini-text a"></i><i class="mini-rule second"></i><i class="mini-text b"></i>
+                  </span>
+                  <strong>Clássico Executivo</strong>
+                  <small>Preto e branco, tradicional e elegante.</small>
                 </label>
               </div>
             </div>
@@ -108,6 +116,7 @@
                 <label class="color-choice"><input type="radio" name="tema" value="vinho"><span class="swatch swatch-wine"></span><strong>Vinho</strong></label>
                 <label class="color-choice"><input type="radio" name="tema" value="grafite"><span class="swatch swatch-graphite"></span><strong>Grafite</strong></label>
               </div>
+              <p class="appearance-note">A cor é aplicada aos modelos Moderno Lateral e Profissional Visual. O Clássico Executivo permanece preto e branco.</p>
             </div>
           </div>
         </div>
@@ -115,7 +124,7 @@
         <div class="form-section">
           <div class="form-section-title">
             <span>02</span>
-            <div><h3>Identificação desta versão</h3><p>Dê um nome para você saber para qual vaga este currículo foi preparado.</p></div>
+            <div><h3>Identificação desta versão</h3><p>Dê um nome para saber para qual vaga este currículo foi preparado.</p></div>
           </div>
           <div class="form-grid">
             <div class="form-group"><label for="tituloCurriculo">Nome desta versão</label><input id="tituloCurriculo" type="text" placeholder="Ex.: Currículo - Suporte de TI" required></div>
@@ -207,7 +216,7 @@
     <div class="preview-toolbar">
       <div>
         <strong>Visualização do currículo</strong>
-        <span>Confira antes de enviar para uma empresa.</span>
+        <span>Confira a organização antes de enviar para uma empresa.</span>
       </div>
       <div class="preview-toolbar-actions">
         <button id="fechar-preview" class="btn btn-secondary" type="button">Fechar</button>
@@ -215,7 +224,7 @@
       </div>
     </div>
     <div class="preview-stage">
-      <article id="curriculo-folha" class="resume-sheet layout-classico tema-azul"></article>
+      <article id="curriculo-folha" class="resume-sheet layout-moderno tema-azul"></article>
     </div>
   </div>
 
