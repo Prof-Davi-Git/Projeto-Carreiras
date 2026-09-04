@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const layoutStylesheet = document.createElement("link");
   layoutStylesheet.rel = "stylesheet";
-  layoutStylesheet.href = "layouts-distintos.css?v=20260904-3";
+  layoutStylesheet.href = "layouts-distintos.css?v=20260904-4";
   document.head.appendChild(layoutStylesheet);
 
   const STORAGE_KEY = "curriculosProfissionais";
@@ -22,9 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(curriculos));
   }
 
-  // ---------------------------------------------------------------------------
   // BACKUP TEMPORARIO
-  // ---------------------------------------------------------------------------
   if (baixar && carregar && arquivo) {
     baixar.addEventListener("click", () => {
       const curriculos = lerCurriculos();
@@ -97,12 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // COR PERSONALIZADA
-  // Mantem as cores prontas e adiciona uma paleta livre para qualquer cor.
-  // A cor personalizada e salva no proprio objeto do curriculo, portanto tambem
-  // e preservada no backup JSON.
-  // ---------------------------------------------------------------------------
+  // PALETA DE COR UNICA
+  // As opções antigas continuam no HTML apenas para manter compatibilidade com
+  // currículos já salvos, mas ficam invisíveis para o aluno.
   const colorOptions = document.querySelector(".color-options");
   const folha = document.querySelector("#curriculo-folha");
   const form = document.querySelector("#curriculo-form");
@@ -110,58 +105,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!colorOptions || !form || !folha) return;
 
+  const labelCor = colorOptions.previousElementSibling;
+  if (labelCor && labelCor.classList.contains("option-label")) {
+    labelCor.textContent = "Escolha a cor";
+  }
+
   const style = document.createElement("style");
   style.textContent = `
+    .color-options > .color-choice {
+      display: none !important;
+    }
+
+    .color-options {
+      grid-template-columns: 1fr !important;
+    }
+
     .custom-color-area {
       grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(170px, 0.9fr);
-      gap: 10px;
-      margin-top: 2px;
-    }
-
-    .custom-color-choice {
-      min-height: 58px;
-    }
-
-    .swatch-custom {
-      background: #6d28d9;
+      display: block;
+      width: 100%;
     }
 
     .custom-color-picker {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      min-height: 58px;
-      padding: 9px 12px;
+      gap: 18px;
+      width: 100%;
+      min-height: 74px;
+      padding: 12px 16px;
       border: 2px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       background: #fff;
+      cursor: pointer;
+      transition: border-color .2s ease, box-shadow .2s ease;
     }
 
-    .custom-color-picker span {
+    .custom-color-picker:hover,
+    .custom-color-picker:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(21, 94, 239, 0.08);
+    }
+
+    .custom-color-copy {
       display: flex;
       flex-direction: column;
-      gap: 1px;
-      color: var(--text);
-      font-size: 0.86rem;
-      font-weight: 800;
+      gap: 3px;
     }
 
-    .custom-color-picker small {
+    .custom-color-copy strong {
+      color: var(--text);
+      font-size: .95rem;
+    }
+
+    .custom-color-copy span {
       color: var(--muted);
-      font-size: 0.72rem;
+      font-size: .82rem;
       font-weight: 600;
-      text-transform: uppercase;
+    }
+
+    .custom-color-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     #cor-personalizada {
-      width: 54px;
-      height: 38px;
+      width: 64px;
+      height: 44px;
       padding: 2px;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 9px;
       background: #fff;
       cursor: pointer;
     }
@@ -172,12 +186,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     #cor-personalizada::-webkit-color-swatch {
       border: 0;
-      border-radius: 5px;
+      border-radius: 6px;
+    }
+
+    #cor-personalizada-hex {
+      min-width: 72px;
+      color: var(--text);
+      font-size: .82rem;
+      font-weight: 800;
+      text-transform: uppercase;
     }
 
     @media (max-width: 560px) {
-      .custom-color-area {
-        grid-template-columns: 1fr;
+      .custom-color-picker {
+        align-items: flex-start;
+        flex-direction: column;
       }
     }
   `;
@@ -186,29 +209,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const customArea = document.createElement("div");
   customArea.className = "custom-color-area";
   customArea.innerHTML = `
-    <label class="color-choice custom-color-choice">
-      <input id="tema-personalizado" type="radio" name="tema" value="personalizada">
-      <span id="swatch-personalizada" class="swatch swatch-custom"></span>
-      <strong>Cor personalizada</strong>
-    </label>
+    <input id="tema-personalizado" type="radio" name="tema" value="personalizada" hidden>
     <label class="custom-color-picker" for="cor-personalizada">
-      <span>
-        Escolher qualquer cor
-        <small id="cor-personalizada-hex">#6D28D9</small>
+      <span class="custom-color-copy">
+        <strong>Paleta de cor</strong>
+        <span>Clique na cor ao lado e escolha qualquer tonalidade.</span>
       </span>
-      <input id="cor-personalizada" type="color" value="#6d28d9" aria-label="Escolher cor personalizada">
+      <span class="custom-color-control">
+        <span id="cor-personalizada-hex">#10BFC9</span>
+        <input id="cor-personalizada" type="color" value="#10bfc9" aria-label="Escolher cor do currículo">
+      </span>
     </label>
   `;
   colorOptions.appendChild(customArea);
 
   const radioPersonalizado = document.querySelector("#tema-personalizado");
   const seletorCor = document.querySelector("#cor-personalizada");
-  const swatchPersonalizado = document.querySelector("#swatch-personalizada");
   const codigoCor = document.querySelector("#cor-personalizada-hex");
+  const novoCurriculo = document.querySelector("#novo-curriculo");
+
+  const CORES_ANTIGAS = {
+    azul: "#10bfc9",
+    verde: "#2f8b59",
+    vinho: "#a84361",
+    grafite: "#64748b",
+    roxo: "#7c3aed",
+    marinho: "#1f4e8c",
+    petroleo: "#0f766e",
+    terracota: "#b85c38",
+    dourado: "#a47a1f",
+    "rosa-seco": "#a85576"
+  };
 
   function normalizarHex(valor) {
     const cor = String(valor || "").trim();
-    return /^#[0-9a-fA-F]{6}$/.test(cor) ? cor.toLowerCase() : "#6d28d9";
+    return /^#[0-9a-fA-F]{6}$/.test(cor) ? cor.toLowerCase() : "#10bfc9";
   }
 
   function hexParaRgb(hex) {
@@ -238,8 +273,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function atualizarPaleta(cor) {
     const hex = normalizarHex(cor);
     seletorCor.value = hex;
-    swatchPersonalizado.style.background = hex;
     codigoCor.textContent = hex.toUpperCase();
+  }
+
+  function ativarPaleta(cor = seletorCor.value) {
+    radioPersonalizado.checked = true;
+    atualizarPaleta(cor);
   }
 
   function aplicarCorNaFolha(curriculo) {
@@ -281,9 +320,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function sincronizarEditor(curriculo) {
-    if (!curriculo || curriculo.tema !== "personalizada") return;
-    radioPersonalizado.checked = true;
-    atualizarPaleta(curriculo.corPersonalizada || "#6d28d9");
+    if (!curriculo) return;
+
+    if (curriculo.tema === "personalizada" && curriculo.corPersonalizada) {
+      ativarPaleta(curriculo.corPersonalizada);
+      return;
+    }
+
+    ativarPaleta(CORES_ANTIGAS[curriculo.tema] || "#10bfc9");
   }
 
   function anotarCards() {
@@ -298,20 +342,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   seletorCor.addEventListener("input", () => {
-    radioPersonalizado.checked = true;
-    atualizarPaleta(seletorCor.value);
+    ativarPaleta(seletorCor.value);
   });
 
   seletorCor.addEventListener("click", () => {
     radioPersonalizado.checked = true;
   });
 
-  radioPersonalizado.addEventListener("change", () => {
-    if (radioPersonalizado.checked) atualizarPaleta(seletorCor.value);
-  });
+  // O script principal redefine a cor padrão ao abrir um novo currículo.
+  // Como este listener foi registrado depois, a paleta volta a ser a opção ativa.
+  if (novoCurriculo) {
+    novoCurriculo.addEventListener("click", () => {
+      ativarPaleta("#10bfc9");
+    });
+  }
 
-  // O script principal salva primeiro; em seguida gravamos a cor personalizada
-  // no mesmo curriculo sem alterar nenhum dos outros dados.
+  // O script principal salva primeiro; logo depois gravamos a cor livre no
+  // mesmo currículo sem alterar os demais dados.
   form.addEventListener("submit", () => {
     const curriculo = salvarCorDoEditor();
     if (curriculo) aplicarCorNaFolha(curriculo);
@@ -329,8 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Depois que o script principal abrir/editar um card, recuperamos a cor livre
-  // usando o ID anotado no proprio card.
+  // Recupera a cor ao visualizar, editar ou duplicar um currículo salvo.
   document.addEventListener("click", (event) => {
     const botao = event.target.closest("button");
     const card = botao?.closest(".saved-card");
@@ -361,6 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
     observer.observe(lista, { childList: true, subtree: true });
   }
 
-  atualizarPaleta("#6d28d9");
+  atualizarPaleta("#10bfc9");
   anotarCards();
 });
