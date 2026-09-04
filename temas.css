@@ -1,0 +1,42 @@
+.swatch-purple { background: #7c3aed; }
+.swatch-navy { background: #1f4e8c; }
+.swatch-petroleum { background: #0f766e; }
+.swatch-terracotta { background: #b85c38; }
+.swatch-gold { background: #a47a1f; }
+.swatch-dusty-rose { background: #a85576; }
+
+.resume-sheet.tema-roxo {
+  --resume-accent: #7c3aed;
+  --resume-soft: #f3efff;
+  --resume-dark: #24124d;
+}
+
+.resume-sheet.tema-marinho {
+  --resume-accent: #1f4e8c;
+  --resume-soft: #eef4fb;
+  --resume-dark: #102a43;
+}
+
+.resume-sheet.tema-petroleo {
+  --resume-accent: #0f766e;
+  --resume-soft: #e9f8f6;
+  --resume-dark: #123c3a;
+}
+
+.resume-sheet.tema-terracota {
+  --resume-accent: #b85c38;
+  --resume-soft: #fbf1ed;
+  --resume-dark: #4a2418;
+}
+
+.resume-sheet.tema-dourado {
+  --resume-accent: #a47a1f;
+  --resume-soft: #fbf7e9;
+  --resume-dark: #46360d;
+}
+
+.resume-sheet.tema-rosa-seco {
+  --resume-accent: #a85576;
+  --resume-soft: #fbf0f4;
+  --resume-dark: #4a1f30;
+}
