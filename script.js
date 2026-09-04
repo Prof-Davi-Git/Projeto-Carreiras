@@ -66,6 +66,23 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  function normalizarLayout(valor, padrao = "classico") {
+    return ["moderno", "compacto", "classico"].includes(valor) ? valor : padrao;
+  }
+
+  function normalizarTema(valor) {
+    return ["azul", "verde", "vinho", "grafite"].includes(valor) ? valor : "azul";
+  }
+
+  function nomeModelo(layout) {
+    const nomes = {
+      moderno: "Moderno Lateral",
+      compacto: "Profissional Visual",
+      classico: "Clássico Executivo"
+    };
+    return nomes[normalizarLayout(layout)] || nomes.classico;
+  }
+
   function definirFoto(dataUrl = "") {
     fotoAtual = dataUrl || "";
     if (fotoAtual) {
@@ -86,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(`#${secao}`).innerHTML = "";
     });
     definirFoto("");
-    document.querySelector('input[name="layout"][value="classico"]').checked = true;
+    document.querySelector('input[name="layout"][value="moderno"]').checked = true;
     document.querySelector('input[name="tema"][value="azul"]').checked = true;
     tituloEditor.textContent = "Novo currículo";
   }
@@ -104,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
     input.placeholder = campo.placeholder || "";
     input.value = valor || "";
     grupo.appendChild(input);
-
     return grupo;
   }
 
@@ -153,8 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
       id: id || document.querySelector("#curriculo-id").value || gerarId(),
       tituloCurriculo: document.querySelector("#tituloCurriculo").value.trim(),
       vagaAlvo: document.querySelector("#vagaAlvo").value.trim(),
-      layout: valorRadio("layout", "classico"),
-      tema: valorRadio("tema", "azul"),
+      layout: normalizarLayout(valorRadio("layout", "moderno"), "moderno"),
+      tema: normalizarTema(valorRadio("tema", "azul")),
       foto: fotoAtual,
       nome: document.querySelector("#nome").value.trim(),
       email: document.querySelector("#email").value.trim(),
@@ -195,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function preencherEditor(curriculo) {
     limparEditor();
-    document.querySelector("#curriculo-id").value = curriculo.id;
+    document.querySelector("#curriculo-id").value = curriculo.id || gerarId();
     document.querySelector("#tituloCurriculo").value = curriculo.tituloCurriculo || "";
     document.querySelector("#vagaAlvo").value = curriculo.vagaAlvo || "";
     document.querySelector("#nome").value = curriculo.nome || "";
@@ -207,8 +223,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#objetivo").value = curriculo.objetivo || "";
     document.querySelector("#resumo").value = curriculo.resumo || "";
 
-    const layout = document.querySelector(`input[name="layout"][value="${curriculo.layout || "classico"}"]`);
-    const tema = document.querySelector(`input[name="tema"][value="${curriculo.tema || "azul"}"]`);
+    const layoutValue = normalizarLayout(curriculo.layout, "classico");
+    const temaValue = normalizarTema(curriculo.tema);
+    const layout = document.querySelector(`input[name="layout"][value="${layoutValue}"]`);
+    const tema = document.querySelector(`input[name="tema"][value="${temaValue}"]`);
     if (layout) layout.checked = true;
     if (tema) tema.checked = true;
     definirFoto(curriculo.foto || "");
@@ -223,36 +241,36 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function criarElemento(tag, classe, texto) {
+  function criarElemento(tag, classe = "", texto = null) {
     const elemento = document.createElement(tag);
     if (classe) elemento.className = classe;
-    if (texto !== undefined && texto !== null) elemento.textContent = texto;
+    if (texto !== null && texto !== undefined) elemento.textContent = texto;
     return elemento;
   }
 
-  function adicionarLinhaContato(container, texto) {
-    if (!texto) return;
-    container.appendChild(criarElemento("span", "resume-contact-item", texto));
+  function iniciais(nome) {
+    const partes = String(nome || "CV").trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return "CV";
+    return partes.slice(0, 2).map((parte) => parte[0]).join("").toUpperCase();
   }
 
-  function criarSecaoCurriculo(titulo, conteudo, classeExtra = "") {
-    if (!conteudo || (Array.isArray(conteudo) && conteudo.length === 0)) return null;
-    const secao = criarElemento("section", `resume-section ${classeExtra}`.trim());
-    secao.appendChild(criarElemento("h2", "resume-section-title", titulo));
-    if (Array.isArray(conteudo)) conteudo.forEach((item) => secao.appendChild(item));
-    else secao.appendChild(conteudo);
-    return secao;
+  function criarAvatar(curriculo, classe = "resume-avatar") {
+    const wrap = criarElemento("div", classe);
+    if (curriculo.foto) {
+      const foto = document.createElement("img");
+      foto.src = curriculo.foto;
+      foto.alt = `Foto profissional de ${curriculo.nome || "candidato"}`;
+      wrap.appendChild(foto);
+    } else {
+      wrap.appendChild(criarElemento("span", "resume-avatar-fallback", iniciais(curriculo.nome)));
+    }
+    return wrap;
   }
 
-  function paragrafo(texto, classe = "") {
-    if (!texto) return null;
-    return criarElemento("p", classe, texto);
-  }
-
-  function itemLinha(titulo, subtitulo, periodo, descricao) {
-    const item = criarElemento("div", "resume-entry");
+  function itemLinha(titulo, subtitulo, periodo, descricao, classe = "") {
+    const item = criarElemento("div", `resume-entry ${classe}`.trim());
     const topo = criarElemento("div", "resume-entry-head");
-    const textos = criarElemento("div");
+    const textos = criarElemento("div", "resume-entry-copy");
     if (titulo) textos.appendChild(criarElemento("h3", "", titulo));
     if (subtitulo) textos.appendChild(criarElemento("p", "resume-entry-sub", subtitulo));
     topo.appendChild(textos);
@@ -262,76 +280,317 @@ document.addEventListener("DOMContentLoaded", () => {
     return item;
   }
 
-  function listaTags(valores) {
-    const listaTagsEl = criarElemento("div", "resume-tags");
+  function listaTags(valores, classe = "") {
+    const listaTagsEl = criarElemento("div", `resume-tags ${classe}`.trim());
     valores.filter(Boolean).forEach((valor) => listaTagsEl.appendChild(criarElemento("span", "resume-tag", valor)));
     return listaTagsEl;
   }
 
-  function renderizarCurriculo(curriculo) {
-    folha.innerHTML = "";
-    folha.className = `resume-sheet layout-${curriculo.layout || "classico"} tema-${curriculo.tema || "azul"}`;
+  function secaoGenerica(titulo, conteudo, classe = "") {
+    if (!conteudo || (Array.isArray(conteudo) && conteudo.length === 0)) return null;
+    const secao = criarElemento("section", `resume-section ${classe}`.trim());
+    secao.appendChild(criarElemento("h2", "resume-section-title", titulo));
+    if (Array.isArray(conteudo)) conteudo.forEach((item) => secao.appendChild(item));
+    else secao.appendChild(conteudo);
+    return secao;
+  }
 
-    const header = criarElemento("header", "resume-header");
-    if (curriculo.foto) {
-      const foto = document.createElement("img");
-      foto.className = "resume-photo";
-      foto.src = curriculo.foto;
-      foto.alt = `Foto profissional de ${curriculo.nome || "candidato"}`;
-      header.appendChild(foto);
+  function textoParagrafo(texto, classe = "resume-text") {
+    return texto ? criarElemento("p", classe, texto) : null;
+  }
+
+  function contatosDo(curriculo) {
+    return [
+      ["E-mail", curriculo.email],
+      ["Telefone", curriculo.telefone],
+      ["Local", curriculo.cidade],
+      ["LinkedIn", curriculo.linkedin],
+      ["GitHub / Portfólio", curriculo.github]
+    ].filter(([, valor]) => valor);
+  }
+
+  function habilidadesDo(curriculo) {
+    return (curriculo.habilidades || []).map((item) => item.valor).filter(Boolean);
+  }
+
+  function competenciasDo(curriculo) {
+    return (curriculo.competencias || []).map((item) => item.valor).filter(Boolean);
+  }
+
+  function renderModerno(curriculo) {
+    folha.className = `resume-sheet layout-moderno tema-${normalizarTema(curriculo.tema)}`;
+    const shell = criarElemento("div", "modern-shell");
+    const side = criarElemento("aside", "modern-sidebar");
+    const main = criarElemento("main", "modern-main");
+
+    side.appendChild(criarAvatar(curriculo, "modern-avatar"));
+
+    const contatos = contatosDo(curriculo);
+    if (contatos.length) {
+      const sec = criarElemento("section", "modern-side-section");
+      sec.appendChild(criarElemento("h2", "", "Contato"));
+      contatos.forEach(([rotulo, valor]) => {
+        const item = criarElemento("div", "modern-contact");
+        item.appendChild(criarElemento("strong", "", rotulo));
+        item.appendChild(criarElemento("span", "", valor));
+        sec.appendChild(item);
+      });
+      side.appendChild(sec);
     }
 
-    const identidade = criarElemento("div", "resume-identity");
-    identidade.appendChild(criarElemento("h1", "", curriculo.nome || "Nome do candidato"));
-    if (curriculo.vagaAlvo) identidade.appendChild(criarElemento("p", "resume-role", curriculo.vagaAlvo));
-    header.appendChild(identidade);
+    const habilidades = habilidadesDo(curriculo);
+    if (habilidades.length) {
+      const sec = criarElemento("section", "modern-side-section");
+      sec.appendChild(criarElemento("h2", "", "Habilidades"));
+      sec.appendChild(listaTags(habilidades, "modern-tags"));
+      side.appendChild(sec);
+    }
 
-    const contatos = criarElemento("div", "resume-contacts");
-    adicionarLinhaContato(contatos, curriculo.email);
-    adicionarLinhaContato(contatos, curriculo.telefone);
-    adicionarLinhaContato(contatos, curriculo.cidade);
-    adicionarLinhaContato(contatos, curriculo.linkedin);
-    adicionarLinhaContato(contatos, curriculo.github);
-    header.appendChild(contatos);
+    const competencias = competenciasDo(curriculo);
+    if (competencias.length) {
+      const sec = criarElemento("section", "modern-side-section");
+      sec.appendChild(criarElemento("h2", "", "Competências"));
+      const ul = criarElemento("ul", "modern-list");
+      competencias.forEach((valor) => ul.appendChild(criarElemento("li", "", valor)));
+      sec.appendChild(ul);
+      side.appendChild(sec);
+    }
+
+    const idiomas = (curriculo.idiomas || []).filter((item) => item.idioma || item.nivel);
+    if (idiomas.length) {
+      const sec = criarElemento("section", "modern-side-section");
+      sec.appendChild(criarElemento("h2", "", "Idiomas"));
+      idiomas.forEach((item) => {
+        const linha = criarElemento("div", "modern-language");
+        linha.appendChild(criarElemento("strong", "", item.idioma || "Idioma"));
+        if (item.nivel) linha.appendChild(criarElemento("span", "", item.nivel));
+        sec.appendChild(linha);
+      });
+      side.appendChild(sec);
+    }
+
+    const cursos = (curriculo.cursos || []).filter((item) => item.nome || item.instituicao || item.ano);
+    if (cursos.length) {
+      const sec = criarElemento("section", "modern-side-section");
+      sec.appendChild(criarElemento("h2", "", "Cursos"));
+      cursos.forEach((item) => {
+        const bloco = criarElemento("div", "modern-course");
+        if (item.nome) bloco.appendChild(criarElemento("strong", "", item.nome));
+        const detalhe = [item.instituicao, item.ano].filter(Boolean).join(" • ");
+        if (detalhe) bloco.appendChild(criarElemento("span", "", detalhe));
+        sec.appendChild(bloco);
+      });
+      side.appendChild(sec);
+    }
+
+    const head = criarElemento("header", "modern-main-header");
+    head.appendChild(criarElemento("h1", "", curriculo.nome || "Nome do candidato"));
+    if (curriculo.vagaAlvo) head.appendChild(criarElemento("p", "modern-role", curriculo.vagaAlvo));
+    main.appendChild(head);
+
+    if (curriculo.resumo) main.appendChild(secaoGenerica("Sobre mim", textoParagrafo(curriculo.resumo), "modern-section"));
+    if (curriculo.objetivo) main.appendChild(secaoGenerica("Objetivo profissional", textoParagrafo(curriculo.objetivo), "modern-section"));
+
+    const experiencias = (curriculo.experiencias || [])
+      .filter((item) => Object.values(item).some(Boolean))
+      .map((item) => itemLinha(item.cargo, item.empresa, item.periodo, item.descricao, "modern-card-entry"));
+    if (experiencias.length) main.appendChild(secaoGenerica("Experiência", experiencias, "modern-section"));
+
+    const formacoes = (curriculo.formacoes || [])
+      .filter((item) => Object.values(item).some(Boolean))
+      .map((item) => itemLinha(item.curso, item.instituicao, item.periodo, "", "modern-card-entry"));
+    if (formacoes.length) main.appendChild(secaoGenerica("Formação", formacoes, "modern-section"));
+
+    const projetos = (curriculo.projetos || [])
+      .filter((item) => Object.values(item).some(Boolean))
+      .map((item) => itemLinha(item.nome, "", "", item.descricao, "modern-project-entry"));
+    if (projetos.length) main.appendChild(secaoGenerica("Projetos", projetos, "modern-section"));
+
+    shell.append(side, main);
+    folha.appendChild(shell);
+  }
+
+  function cardSection(titulo, classe = "") {
+    const sec = criarElemento("section", `visual-card ${classe}`.trim());
+    sec.appendChild(criarElemento("h2", "visual-card-title", titulo));
+    return sec;
+  }
+
+  function renderVisual(curriculo) {
+    folha.className = `resume-sheet layout-compacto tema-${normalizarTema(curriculo.tema)}`;
+
+    const header = criarElemento("header", "visual-header-card");
+    header.appendChild(criarAvatar(curriculo, "visual-avatar"));
+    const identidade = criarElemento("div", "visual-identity");
+    identidade.appendChild(criarElemento("h1", "", curriculo.nome || "Nome do candidato"));
+    if (curriculo.vagaAlvo) identidade.appendChild(criarElemento("p", "visual-role", curriculo.vagaAlvo));
+    const contatos = criarElemento("div", "visual-contacts");
+    contatosDo(curriculo).forEach(([rotulo, valor]) => {
+      const item = criarElemento("span", "visual-contact-item");
+      item.appendChild(criarElemento("strong", "", `${rotulo}: `));
+      item.appendChild(document.createTextNode(valor));
+      contatos.appendChild(item);
+    });
+    identidade.appendChild(contatos);
+    header.appendChild(identidade);
     folha.appendChild(header);
 
-    const principal = criarElemento("div", "resume-body");
-    const main = criarElemento("main", "resume-main");
-    const side = criarElemento("aside", "resume-side");
+    const top = criarElemento("div", "visual-top-grid");
+    const perfil = cardSection("Perfil", "visual-profile");
+    if (curriculo.resumo) perfil.appendChild(textoParagrafo(curriculo.resumo, "visual-text"));
+    if (curriculo.objetivo) {
+      perfil.appendChild(criarElemento("h3", "visual-mini-title", "Objetivo"));
+      perfil.appendChild(textoParagrafo(curriculo.objetivo, "visual-text"));
+    }
+    if (perfil.children.length > 1) top.appendChild(perfil);
 
-    const objetivo = criarSecaoCurriculo("Objetivo profissional", paragrafo(curriculo.objetivo, "resume-text"));
-    const resumo = criarSecaoCurriculo("Resumo profissional", paragrafo(curriculo.resumo, "resume-text"));
-    if (objetivo) main.appendChild(objetivo);
-    if (resumo) main.appendChild(resumo);
+    const skills = cardSection("Habilidades", "visual-skills");
+    const habilidades = habilidadesDo(curriculo);
+    const competencias = competenciasDo(curriculo);
+    if (habilidades.length) skills.appendChild(listaTags(habilidades, "visual-tag-list"));
+    if (competencias.length) {
+      skills.appendChild(criarElemento("h3", "visual-mini-title", "Competências"));
+      skills.appendChild(listaTags(competencias, "visual-tag-list"));
+    }
+    if (skills.children.length > 1) top.appendChild(skills);
+    if (top.children.length) folha.appendChild(top);
 
-    const experiencias = (curriculo.experiencias || []).map((item) => itemLinha(item.cargo, item.empresa, item.periodo, item.descricao));
-    const secExperiencias = criarSecaoCurriculo("Experiência profissional", experiencias);
-    if (secExperiencias) main.appendChild(secExperiencias);
+    const experiencias = (curriculo.experiencias || []).filter((item) => Object.values(item).some(Boolean));
+    if (experiencias.length) {
+      const sec = cardSection("Experiência", "visual-wide");
+      const timeline = criarElemento("div", "visual-timeline");
+      experiencias.forEach((item) => timeline.appendChild(itemLinha(item.cargo, item.empresa, item.periodo, item.descricao, "visual-timeline-entry")));
+      sec.appendChild(timeline);
+      folha.appendChild(sec);
+    }
 
-    const formacoes = (curriculo.formacoes || []).map((item) => itemLinha(item.curso, item.instituicao, item.periodo));
-    const secFormacoes = criarSecaoCurriculo("Formação acadêmica", formacoes);
-    if (secFormacoes) main.appendChild(secFormacoes);
+    const trio = criarElemento("div", "visual-bottom-grid");
 
-    const projetos = (curriculo.projetos || []).map((item) => itemLinha(item.nome, "", "", item.descricao));
-    const secProjetos = criarSecaoCurriculo("Projetos e atividades", projetos);
-    if (secProjetos) main.appendChild(secProjetos);
+    const formacoes = (curriculo.formacoes || []).filter((item) => Object.values(item).some(Boolean));
+    if (formacoes.length) {
+      const sec = cardSection("Formação");
+      formacoes.forEach((item) => sec.appendChild(itemLinha(item.curso, item.instituicao, item.periodo, "", "visual-small-entry")));
+      trio.appendChild(sec);
+    }
 
-    const habilidades = (curriculo.habilidades || []).map((item) => item.valor).filter(Boolean);
-    const competencias = (curriculo.competencias || []).map((item) => item.valor).filter(Boolean);
-    const cursos = (curriculo.cursos || []).map((item) => {
-      const partes = [item.instituicao, item.ano].filter(Boolean).join(" • ");
-      return itemLinha(item.nome, partes, "");
-    });
-    const idiomas = (curriculo.idiomas || []).map((item) => itemLinha(item.idioma, item.nivel, ""));
+    const cursos = (curriculo.cursos || []).filter((item) => Object.values(item).some(Boolean));
+    if (cursos.length) {
+      const sec = cardSection("Cursos");
+      cursos.forEach((item) => {
+        const detalhe = [item.instituicao, item.ano].filter(Boolean).join(" • ");
+        sec.appendChild(itemLinha(item.nome, detalhe, "", "", "visual-small-entry"));
+      });
+      trio.appendChild(sec);
+    }
 
-    if (habilidades.length) side.appendChild(criarSecaoCurriculo("Habilidades", listaTags(habilidades)));
-    if (competencias.length) side.appendChild(criarSecaoCurriculo("Competências", listaTags(competencias)));
-    if (cursos.length) side.appendChild(criarSecaoCurriculo("Cursos e certificações", cursos));
-    if (idiomas.length) side.appendChild(criarSecaoCurriculo("Idiomas", idiomas));
+    const idiomas = (curriculo.idiomas || []).filter((item) => item.idioma || item.nivel);
+    if (idiomas.length) {
+      const sec = cardSection("Idiomas");
+      idiomas.forEach((item) => sec.appendChild(itemLinha(item.idioma, item.nivel, "", "", "visual-small-entry")));
+      trio.appendChild(sec);
+    }
 
-    principal.appendChild(main);
-    if (side.children.length) principal.appendChild(side);
-    folha.appendChild(principal);
+    if (trio.children.length) folha.appendChild(trio);
+
+    const projetos = (curriculo.projetos || []).filter((item) => Object.values(item).some(Boolean));
+    if (projetos.length) {
+      const sec = cardSection("Projetos", "visual-wide");
+      const grid = criarElemento("div", "visual-project-grid");
+      projetos.forEach((item) => grid.appendChild(itemLinha(item.nome, "", "", item.descricao, "visual-project-card")));
+      sec.appendChild(grid);
+      folha.appendChild(sec);
+    }
+  }
+
+  function classicSection(titulo, classe = "") {
+    const sec = criarElemento("section", `classic-section ${classe}`.trim());
+    sec.appendChild(criarElemento("h2", "", titulo));
+    return sec;
+  }
+
+  function renderClassico(curriculo) {
+    folha.className = "resume-sheet layout-classico";
+
+    const header = criarElemento("header", "classic-header");
+    if (curriculo.foto) header.appendChild(criarAvatar(curriculo, "classic-avatar"));
+    header.appendChild(criarElemento("h1", "", curriculo.nome || "Nome do candidato"));
+    if (curriculo.vagaAlvo) header.appendChild(criarElemento("p", "classic-role", curriculo.vagaAlvo));
+
+    const contatos = criarElemento("div", "classic-contacts");
+    contatosDo(curriculo).forEach(([, valor]) => contatos.appendChild(criarElemento("span", "", valor)));
+    if (contatos.children.length) header.appendChild(contatos);
+    folha.appendChild(header);
+
+    if (curriculo.objetivo) {
+      const sec = classicSection("Objetivo profissional");
+      sec.appendChild(textoParagrafo(curriculo.objetivo, "classic-text"));
+      folha.appendChild(sec);
+    }
+
+    if (curriculo.resumo) {
+      const sec = classicSection("Resumo profissional");
+      sec.appendChild(textoParagrafo(curriculo.resumo, "classic-text"));
+      folha.appendChild(sec);
+    }
+
+    const experiencias = (curriculo.experiencias || []).filter((item) => Object.values(item).some(Boolean));
+    if (experiencias.length) {
+      const sec = classicSection("Experiência profissional");
+      experiencias.forEach((item) => sec.appendChild(itemLinha(item.cargo, item.empresa, item.periodo, item.descricao, "classic-entry")));
+      folha.appendChild(sec);
+    }
+
+    const formacoes = (curriculo.formacoes || []).filter((item) => Object.values(item).some(Boolean));
+    if (formacoes.length) {
+      const sec = classicSection("Formação acadêmica");
+      formacoes.forEach((item) => sec.appendChild(itemLinha(item.curso, item.instituicao, item.periodo, "", "classic-entry")));
+      folha.appendChild(sec);
+    }
+
+    const cursos = (curriculo.cursos || []).filter((item) => Object.values(item).some(Boolean));
+    if (cursos.length) {
+      const sec = classicSection("Cursos e certificações");
+      const ul = criarElemento("ul", "classic-list");
+      cursos.forEach((item) => ul.appendChild(criarElemento("li", "", [item.nome, item.instituicao, item.ano].filter(Boolean).join(" — "))));
+      sec.appendChild(ul);
+      folha.appendChild(sec);
+    }
+
+    const habilidades = habilidadesDo(curriculo);
+    if (habilidades.length) {
+      const sec = classicSection("Habilidades");
+      sec.appendChild(criarElemento("p", "classic-inline-list", habilidades.join("  |  ")));
+      folha.appendChild(sec);
+    }
+
+    const competencias = competenciasDo(curriculo);
+    if (competencias.length) {
+      const sec = classicSection("Competências");
+      sec.appendChild(criarElemento("p", "classic-inline-list", competencias.join("  |  ")));
+      folha.appendChild(sec);
+    }
+
+    const idiomas = (curriculo.idiomas || []).filter((item) => item.idioma || item.nivel);
+    if (idiomas.length) {
+      const sec = classicSection("Idiomas");
+      sec.appendChild(criarElemento("p", "classic-inline-list", idiomas.map((item) => [item.idioma, item.nivel].filter(Boolean).join(" — ")).join("  |  ")));
+      folha.appendChild(sec);
+    }
+
+    const projetos = (curriculo.projetos || []).filter((item) => Object.values(item).some(Boolean));
+    if (projetos.length) {
+      const sec = classicSection("Projetos e atividades");
+      projetos.forEach((item) => sec.appendChild(itemLinha(item.nome, "", "", item.descricao, "classic-entry")));
+      folha.appendChild(sec);
+    }
+  }
+
+  function renderizarCurriculo(curriculo) {
+    folha.innerHTML = "";
+    const layout = normalizarLayout(curriculo.layout, "classico");
+    if (layout === "moderno") renderModerno(curriculo);
+    else if (layout === "compacto") renderVisual(curriculo);
+    else renderClassico(curriculo);
   }
 
   function abrirPreview(curriculo) {
@@ -354,19 +613,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     curriculos
       .slice()
-      .sort((a, b) => (b.atualizadoEm || "").localeCompare(a.atualizadoEm || ""))
+      .sort((a, b) => String(b.atualizadoEm || "").localeCompare(String(a.atualizadoEm || "")))
       .forEach((curriculo) => {
-        const card = document.createElement("article");
-        card.className = "saved-card";
-
-        const topo = document.createElement("div");
+        const card = criarElemento("article", "saved-card");
+        const topo = criarElemento("div");
         const meta = criarElemento("div", "saved-meta");
-        const badge = criarElemento("span", "badge gray", curriculo.vagaAlvo || "Currículo geral");
-        const estilo = criarElemento("span", "style-label", `${curriculo.layout || "classico"} • ${curriculo.tema || "azul"}`);
-        meta.append(badge, estilo);
-        const titulo = criarElemento("h3", "", curriculo.tituloCurriculo || "Currículo sem título");
-        const nome = criarElemento("p", "", curriculo.nome || "Nome ainda não preenchido");
-        topo.append(meta, titulo, nome);
+        meta.appendChild(criarElemento("span", "badge gray", curriculo.vagaAlvo || "Currículo geral"));
+        meta.appendChild(criarElemento("span", "style-label", nomeModelo(curriculo.layout)));
+        topo.appendChild(meta);
+        topo.appendChild(criarElemento("h3", "", curriculo.tituloCurriculo || "Currículo sem título"));
+        topo.appendChild(criarElemento("p", "", curriculo.nome || "Nome ainda não preenchido"));
 
         const acoes = criarElemento("div", "saved-actions");
 
@@ -486,9 +742,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelector("#fechar-preview").addEventListener("click", fecharPreview);
   document.querySelector("#imprimir-curriculo").addEventListener("click", () => window.print());
+
   modalPreview.addEventListener("click", (event) => {
     if (event.target === modalPreview) fecharPreview();
   });
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !modalPreview.classList.contains("hidden")) fecharPreview();
   });
@@ -528,7 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
         atualizadoEm: new Date().toISOString()
       }]);
     } catch (erro) {
-      // Ignora dados antigos inválidos.
+      // Dado antigo inválido: mantém o site funcionando sem migrar.
     }
   }
 
