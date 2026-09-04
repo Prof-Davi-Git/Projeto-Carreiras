@@ -71,7 +71,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function normalizarTema(valor) {
-    return ["azul", "verde", "vinho", "grafite"].includes(valor) ? valor : "azul";
+    const temas = [
+      "azul", "verde", "vinho", "grafite",
+      "roxo", "marinho", "petroleo", "terracota", "dourado", "rosa-seco"
+    ];
+    return temas.includes(valor) ? valor : "azul";
   }
 
   function nomeModelo(layout) {
@@ -82,6 +86,89 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     return nomes[normalizarLayout(layout)] || nomes.classico;
   }
+
+  function configurarCoresExtras() {
+    const container = document.querySelector(".color-options");
+    if (!container || container.dataset.coresExtras === "ok") return;
+
+    const novasCores = [
+      { valor: "roxo", nome: "Roxo", classe: "swatch-purple" },
+      { valor: "marinho", nome: "Marinho", classe: "swatch-navy" },
+      { valor: "petroleo", nome: "Petróleo", classe: "swatch-petroleum" },
+      { valor: "terracota", nome: "Terracota", classe: "swatch-terracotta" },
+      { valor: "dourado", nome: "Dourado", classe: "swatch-gold" },
+      { valor: "rosa-seco", nome: "Rosa seco", classe: "swatch-dusty-rose" }
+    ];
+
+    novasCores.forEach((cor) => {
+      const label = document.createElement("label");
+      label.className = "color-choice";
+
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = "tema";
+      input.value = cor.valor;
+
+      const swatch = document.createElement("span");
+      swatch.className = `swatch ${cor.classe}`;
+
+      const texto = document.createElement("strong");
+      texto.textContent = cor.nome;
+
+      label.append(input, swatch, texto);
+      container.appendChild(label);
+    });
+
+    const style = document.createElement("style");
+    style.textContent = `
+      .swatch-purple { background: #7c3aed; }
+      .swatch-navy { background: #1f4e8c; }
+      .swatch-petroleum { background: #0f766e; }
+      .swatch-terracotta { background: #b85c38; }
+      .swatch-gold { background: #a47a1f; }
+      .swatch-dusty-rose { background: #a85576; }
+
+      .resume-sheet.tema-roxo {
+        --resume-accent: #7c3aed;
+        --resume-soft: #f3efff;
+        --resume-dark: #24124d;
+      }
+
+      .resume-sheet.tema-marinho {
+        --resume-accent: #1f4e8c;
+        --resume-soft: #eef4fb;
+        --resume-dark: #102a43;
+      }
+
+      .resume-sheet.tema-petroleo {
+        --resume-accent: #0f766e;
+        --resume-soft: #e9f8f6;
+        --resume-dark: #123c3a;
+      }
+
+      .resume-sheet.tema-terracota {
+        --resume-accent: #b85c38;
+        --resume-soft: #fbf1ed;
+        --resume-dark: #4a2418;
+      }
+
+      .resume-sheet.tema-dourado {
+        --resume-accent: #a47a1f;
+        --resume-soft: #fbf7e9;
+        --resume-dark: #46360d;
+      }
+
+      .resume-sheet.tema-rosa-seco {
+        --resume-accent: #a85576;
+        --resume-soft: #fbf0f4;
+        --resume-dark: #4a1f30;
+      }
+    `;
+    document.head.appendChild(style);
+    container.dataset.coresExtras = "ok";
+  }
+
+  configurarCoresExtras();
 
   function definirFoto(dataUrl = "") {
     fotoAtual = dataUrl || "";
