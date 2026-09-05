@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Professor | Meu Futuro Profissional</title>
+  <link rel="stylesheet" href="style.css?v=20260905-1">
+  <link rel="stylesheet" href="professor.css?v=20260905-1">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="professor.html">Meu Futuro Profissional</a>
+    <nav class="menu" aria-label="Menu do professor">
+      <a class="active" href="professor.html">Painel do Professor</a>
+    </nav>
+  </header>
+
+  <main class="container professor-page">
+    <section class="page-hero">
+      <p class="small-label">PAINEL DO RECRUTADOR</p>
+      <h1>Currículos e entrevistas dos alunos</h1>
+      <p>Visualize o currículo enviado para cada vaga, registre a entrevista e publique notas e feedbacks.</p>
+    </section>
+
+    <section class="panel professor-toolbar">
+      <div>
+        <strong id="professor-resumo">Carregando processos...</strong>
+        <span>Os dados desta tela vêm do Firestore.</span>
+      </div>
+      <div class="professor-filtros">
+        <input id="professor-busca" type="search" placeholder="Buscar aluno ou vaga...">
+        <select id="professor-status">
+          <option value="todos">Todos</option>
+          <option value="pendente">Pendentes de avaliação</option>
+          <option value="avaliado">Avaliados</option>
+        </select>
+      </div>
+    </section>
+
+    <section id="professor-lista" class="professor-lista"></section>
+
+    <section id="professor-vazio" class="panel empty-state hidden">
+      <span class="badge gray">SEM ENVIOS</span>
+      <h2>Nenhum currículo foi enviado ainda.</h2>
+      <p>Quando os alunos enviarem uma versão de currículo para uma vaga, ela aparecerá aqui.</p>
+    </section>
+  </main>
+
+  <script src="firebase-loader.js?v=20260905-1"></script>
+</body>
+</html>
