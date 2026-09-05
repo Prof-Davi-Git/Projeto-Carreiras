@@ -2,6 +2,14 @@
   const atual = document.currentScript?.src || location.href;
   const local = (arquivo) => new URL(arquivo, atual).href;
 
+  function carregarEstilo(href) {
+    if ([...document.styleSheets].some((sheet) => sheet.href === href)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
   function carregar(src) {
     return new Promise((resolve, reject) => {
       const existente = [...document.scripts].find((s) => s.src === src);
@@ -25,6 +33,7 @@
 
   async function iniciar() {
     try {
+      carregarEstilo(local("firebase-ui.css?v=20260905-1"));
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js");
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js");
