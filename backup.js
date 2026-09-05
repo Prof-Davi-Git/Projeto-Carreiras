@@ -349,16 +349,12 @@ document.addEventListener("DOMContentLoaded", () => {
     radioPersonalizado.checked = true;
   });
 
-  // O script principal redefine a cor padrão ao abrir um novo currículo.
-  // Como este listener foi registrado depois, a paleta volta a ser a opção ativa.
   if (novoCurriculo) {
     novoCurriculo.addEventListener("click", () => {
       ativarPaleta("#10bfc9");
     });
   }
 
-  // O script principal salva primeiro; logo depois gravamos a cor livre no
-  // mesmo currículo sem alterar os demais dados.
   form.addEventListener("submit", () => {
     const curriculo = salvarCorDoEditor();
     if (curriculo) aplicarCorNaFolha(curriculo);
@@ -376,7 +372,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Recupera a cor ao visualizar, editar ou duplicar um currículo salvo.
   document.addEventListener("click", (event) => {
     const botao = event.target.closest("button");
     const card = botao?.closest(".saved-card");
@@ -410,3 +405,13 @@ document.addEventListener("DOMContentLoaded", () => {
   atualizarPaleta("#10bfc9");
   anotarCards();
 });
+
+// A integração Firebase é carregada depois dos scripts antigos para preservar
+// todo o comportamento já existente do editor de currículos.
+(() => {
+  if (document.querySelector('script[data-firebase-carreiras="loader"]')) return;
+  const script = document.createElement("script");
+  script.src = "firebase-loader.js?v=20260905-1";
+  script.dataset.firebaseCarreiras = "loader";
+  document.body.appendChild(script);
+})();
