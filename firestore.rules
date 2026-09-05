@@ -21,7 +21,8 @@ service cloud.firestore {
       allow update: if logado() && (
         (request.auth.uid == uid
           && resource.data.role == 'aluno'
-          && request.resource.data.role == 'aluno')
+          && request.resource.data.role == 'aluno'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultimoAcessoEm']))
         || professor()
       );
 
