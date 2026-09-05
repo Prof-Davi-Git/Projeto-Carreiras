@@ -1,0 +1,46 @@
+/* Base reaproveitada do Projeto_Redes para validar o primeiro acesso.
+   Os nomes estão abreviados e as senhas não ficam em texto puro.
+   Regra atual: 6 últimos dígitos do RA + dígito.
+   Validação: PBKDF2-SHA256 com salt individual.
+*/
+window.ALUNOS_AUTENTICACAO = Object.freeze([
+  { nome: "Beatriz S. P.", salt: "yC5DAwaCIvGU7OAFBvkgrQ==", hash: "aK3ov6FHD6+whEYXaoOyoDHX9p3hcz8D5WOOpHRP5Fk=", iteracoes: 120000 },
+  { nome: "Brenno S. T.", salt: "EsKXZxYnYOHkLp359s1jRA==", hash: "HqCcQctH3t5nHjni22m9ubxnw7km8+g2B4vpablVay4=", iteracoes: 120000 },
+  { nome: "Danielle L. S. M.", salt: "ZfagrLC8QX97cgaVnSIoeQ==", hash: "Wyx/jrrZg8jI4raMd9RrfsIt9kLwnMBSKIsi23bWB7A=", iteracoes: 120000 },
+  { nome: "Eduardo L. O. N.", salt: "fKhI8jXNEu9hv/JMt/TVPQ==", hash: "Lrfe5XMTnHq0/wGb3esQWasmCxW+exROcIVltkqTryk=", iteracoes: 120000 },
+  { nome: "Fernanda M. F.", salt: "cPjs104UgAIeI7XVRefQAQ==", hash: "N1h77msLWG1pToCxfZT/qV5wBPvap4AEZnEK6Jm8NBg=", iteracoes: 120000 },
+  { nome: "Giovanna A. M.", salt: "d9W87W6BHYTNQjFVm0BTNg==", hash: "pYnTCgm/Bj11DteuB0gRW3btUdznheoHi1oqVVAffZA=", iteracoes: 120000 },
+  { nome: "Gustavo Felix L.", salt: "m1Y4mR4L6Z1lUpZ8VWvXpA==", hash: "6VubVdJLyNRWdfZAM0reBFwFJT1tavGB0rYNc3INDAI=", iteracoes: 120000 },
+  { nome: "Gustavo Ferreira L.", salt: "SjGQSNnrIUx0P0YFWr6BCA==", hash: "HQvuMVrJiVXteQGE/qZBnKWqvpsFOZpFUjegM3taEGo=", iteracoes: 120000 },
+  { nome: "Heloise B. G.", salt: "Rc6gTJkXJ+S3kFY9l3ZJMA==", hash: "PiWOANh0WPXD3Hf6OQ3NwYiue1TOqp97FqOQ2x3olw8=", iteracoes: 120000 },
+  { nome: "Henrique M. S. M. M.", salt: "gvIbAEJR0VRJ+SFZMAsRmA==", hash: "SE4W0Qs3S9o7yjk7i7Xuh3JeNU5jSmGqCcKr8ErLP+c=", iteracoes: 120000 },
+  { nome: "Henry K. O. F.", salt: "uOdxS1Cxv/PSlgVnAnkO+A==", hash: "dTl5Ko0IuYLpt7dy4MoNz87qhiIyxSPKmsq1tZukvpc=", iteracoes: 120000 },
+  { nome: "Isaac S. O.", salt: "Rq6rziG0/faZVQcOrQ7reQ==", hash: "9vGnxghqMf9IS+MR0MvueItjL3cwXFJMhVWGCskH5Hw=", iteracoes: 120000 },
+  { nome: "Isabella V. R. S.", salt: "G7IK4K0qjHqI9fM6Y4aQFw==", hash: "Y7Pcfpf2pP2r40cz6oPOkPjO/gZrtLiS0+2AsKZ79+I=", iteracoes: 120000 },
+  { nome: "Lauro M. G. S.", salt: "zi42zojae4fh3W2CsMQY1w==", hash: "sHxrrSF0TLMD+ZITzjbXecLN+aR3jus2oJRAZ6fvoBs=", iteracoes: 120000 },
+  { nome: "Lucas B. S.", salt: "pk+3x3frhDQB4GigGCGm6g==", hash: "zQdii49D2rctJwIKHwgQh5gvgIOQH13QmMdZ5BEddIk=", iteracoes: 120000 },
+  { nome: "Luis F. B. M.", salt: "urEUbi+ZUWRomxq6+7QK6A==", hash: "5WIrXSQ1LS1WcPEYbe1E+1OcdS4K+vHiceU2E5IsIJE=", iteracoes: 120000 },
+  { nome: "Luiz H. S. F.", salt: "q9ORKCVfm/phFLoN9wxxMQ==", hash: "yLaUAhMaCGdjNg5Uzq1cltKLsPAYrCcISSX85ZZyhUE=", iteracoes: 120000 },
+  { nome: "Luiz V. F. C.", salt: "Sb0jzVY/dNMJyv3bH/Vriw==", hash: "IeYuPnWjX3X7ebgUAo3HkVrJ83aIXiPlEIcU0ASlxfE=", iteracoes: 120000 },
+  { nome: "Marcello C. H. B.", salt: "erXFjILlViaa+4NqYuJqtg==", hash: "CGe0n67XzgVTKcC79GEwetSoEV/iiLGORQC0ri7E55k=", iteracoes: 120000 },
+  { nome: "Marcos V. A. M.", salt: "emNh/frbfT6WsICuHkPQjw==", hash: "16GBQ+4dYrZmmA953X2AGXUOsrWntILWbzkWyOVPxoM=", iteracoes: 120000 },
+  { nome: "Matheus V. S.", salt: "tcutnAtWc4rK7JRYY2hLeQ==", hash: "oW1cMiAKzH9T9X3QIl4ZbSRl81lTs2dg05K7FclOdQM=", iteracoes: 120000 },
+  { nome: "Micaelly F. A.", salt: "0CwqYuxX+ZheD9MxPCQvKw==", hash: "nw4izs0cDQngsPGpH4qRvvyqG0I/6U+GjUYIMxUTQqE=", iteracoes: 120000 },
+  { nome: "Miguel C. S.", salt: "Sm6ozjI6o6GRpSSzxjsXkg==", hash: "dcGECj01prl0rxIJCtnyxH8bd13h5dI7zE5xhDKiYZ8=", iteracoes: 120000 },
+  { nome: "Miguel H. O. G.", salt: "5L1WYhjArVvV0l0q1dpoMA==", hash: "kisIN83NDw37i9xjlAtpjWR5N2rs9hLpDX559wwnks8=", iteracoes: 120000 },
+  { nome: "Mikaela F. M. R.", salt: "cgyBFN2wrW5W/FBD7puZHg==", hash: "4yNxS3BGG4obkwm/yHtYqsdWbvOlExHgEnivuCUyCFw=", iteracoes: 120000 },
+  { nome: "Murillo H. S.", salt: "tcYeFO2LgmNBBDDt/fGzDA==", hash: "umjxHH2g0+lXuFmuC0m7Tc6o29qsNRGz4bVLaE5FDTo=", iteracoes: 120000 },
+  { nome: "Murilo S. C.", salt: "donZR7wuHXJK9IUX+WPVMA==", hash: "VLVKXZXEVt3VSLsaYMy/pozdnUVgJ55/Pd6/rWVHnL0=", iteracoes: 120000 },
+  { nome: "Murilo R. S.", salt: "y5m1UN1NHwkh6siwViMfMA==", hash: "EI2Q/Tn5urg1lckzwtcWbGcFMr3xMIOY9lLSq/B5Ufo=", iteracoes: 120000 },
+  { nome: "Natan S. L.", salt: "Fm/D08/ke/29SnrkOhuigA==", hash: "9wTYbWV2krbnfjWaLTXBSzix/t/zT6r4jbwhAIGY7gc=", iteracoes: 120000 },
+  { nome: "Nicolas C. S.", salt: "qQ/YE/6NQBAi90BkW6Lyhw==", hash: "hLOqwHxBOg5y9d4PZXz2K3ggdk7Z6wto0yxejTgAGKs=", iteracoes: 120000 },
+  { nome: "Pablo R. S. J.", salt: "Yu7XkUSUEUxVfLxq9ARm3g==", hash: "FI7HX+M+oJAviXVCyKFQ/wqdmZwGK73Sk/xY+X8wbUQ=", iteracoes: 120000 },
+  { nome: "Pedro G. S. R.", salt: "/NhCDGw8PMkAHF/B05e8YQ==", hash: "62oDbMcIPBcxpnCHRKNnwaS1AeCaIcqb/mECpDBwuf8=", iteracoes: 120000 },
+  { nome: "Pyetro H. S. R.", salt: "wmE3QfkxCG6mOYNkgwVfXA==", hash: "7IdUMvyPyTBMZLLDWIefWv/sTmrwuXGHdsJCIwiVpJs=", iteracoes: 120000 },
+  { nome: "Sophia A. C.", salt: "NYfWDKJGGnbL72/KhZfukw==", hash: "i2PupGAl6p/sQiM+XUxyTOr0m1moaSVuaw7XbV11Qak=", iteracoes: 120000 },
+  { nome: "Sophia S. A. C.", salt: "9hCRBgdZETT/Gh45e4qIbg==", hash: "Xer8pvGfT4zxXoG10ucsXaiWXaHnix9U13qJDwA95LQ=", iteracoes: 120000 },
+  { nome: "Thiago V. D.", salt: "7mo4WE0QK/H1bGJiuK1oGw==", hash: "s4nUG24lyvjMGP/QM2WnGUS+tenAa4BGNWA6GW5Yhzc=", iteracoes: 120000 },
+  { nome: "Lisandro F. S. S.", salt: "kHPdeaZ1roYysPdWQj+PAA==", hash: "HV+lfTVsQlqfIeht1L8dTbtB4ccGDDzu8cEZhLW2ZKg=", iteracoes: 120000 },
+  { nome: "Pedro H. S.", salt: "3Ks766/7lxSYtBZbOYxHWQ==", hash: "iX2YHU+iOXN7bmQ3NvyPTOTwFCG07SlfBtvXjGxc1/I=", iteracoes: 120000 },
+  { nome: "Vitor E. S. N.", salt: "P7vMzQmw33UPqIkKPZb8rw==", hash: "PRwCIfQe581vPBMZKugW2CqDDGCnfnJO6H6JS1p8hlk=", iteracoes: 120000 }
+]);
