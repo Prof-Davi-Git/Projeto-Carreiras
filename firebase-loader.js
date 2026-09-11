@@ -33,7 +33,7 @@
 
   async function iniciar() {
     try {
-      carregarEstilo(local("firebase-ui.css?v=20260905-1"));
+      carregarEstilo(local("firebase-ui.css?v=20260911-1"));
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js");
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js");
@@ -51,7 +51,8 @@
       };
 
       if (scripts[pagina]) {
-        await carregar(local(`${scripts[pagina]}?v=20260905-1`));
+        const versao = pagina === "entrevistas.html" ? "20260911-1" : "20260905-1";
+        await carregar(local(`${scripts[pagina]}?v=${versao}`));
       }
     } catch (erro) {
       console.error("Firebase não pôde ser iniciado:", erro);
