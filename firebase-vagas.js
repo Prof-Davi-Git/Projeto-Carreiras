@@ -8,6 +8,18 @@
     return item ? item.textContent.split(":").slice(1).join(":").trim() : "";
   }
 
+  function normalizarVagaAberta(card) {
+    const badge = card.querySelector(".badge");
+    if (badge) {
+      badge.textContent = "VAGA ABERTA";
+      badge.classList.add("gray");
+    }
+
+    const entrevista = [...card.querySelectorAll(".meta-item")]
+      .find((el) => el.textContent.trim().toLowerCase().startsWith("entrevista:"));
+    if (entrevista) entrevista.textContent = "Entrevista: a definir";
+  }
+
   async function iniciar() {
     const sessao = await api.exigirSessao("aluno");
     if (!sessao) return;
@@ -40,7 +52,9 @@
         return;
       }
 
+      normalizarVagaAberta(card);
       visiveis += 1;
+
       const params = new URLSearchParams({ vaga: vagaId, titulo });
       if (empresa) params.set("empresa", empresa);
       if (area) params.set("area", area);
