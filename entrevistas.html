@@ -19,44 +19,21 @@
   <main class="container">
     <section class="page-hero">
       <p class="small-label">ENTREVISTAS</p>
-      <h1>Próximas Entrevistas</h1>
-      <p>Aqui serão exibidas as entrevistas definidas pelo professor. Antes de participar, revise a vaga e a versão do currículo que você preparou para ela.</p>
+      <h1>Minhas Entrevistas</h1>
+      <p>Acompanhe seus processos seletivos. Os resultados ficam organizados por entrevista e só aparecem completos quando você escolher exibi-los.</p>
     </section>
 
-    <section class="two-columns">
-      <div class="panel">
-        <span class="badge">ENTREVISTA CONFIRMADA</span>
-        <h2>Assistente de Suporte de TI</h2>
-        <p>Empresa fictícia: Conecta Tech</p>
+    <section id="entrevistas-dinamicas" aria-live="polite"></section>
 
-        <div class="vaga-meta" style="margin:18px 0;">
-          <span class="meta-item"><strong>Data: 04/09/2026</strong></span>
-          <span class="meta-item">Área: Tecnologia</span>
-          <span class="meta-item">Nível: Iniciante</span>
-        </div>
-
-        <p>Prepare um currículo específico para esta vaga e revise as informações que você colocou antes da entrevista.</p>
-
-        <div class="form-actions">
-          <a class="btn btn-secondary" href="vagas.html">Revisar vaga</a>
-          <a class="btn btn-primary" href="curriculos.html">Revisar currículo</a>
-        </div>
-      </div>
-
-      <aside class="panel">
-        <span class="badge">ANTES DA ENTREVISTA</span>
-        <h3>Prepare-se</h3>
-        <ul class="list-clean">
-          <li>Leia novamente a descrição e os requisitos da vaga.</li>
-          <li>Revise exatamente o currículo preparado para esta oportunidade.</li>
-          <li>Esteja pronto para explicar experiências, projetos e competências que colocou no currículo.</li>
-          <li>Responda com clareza, respeito e objetividade.</li>
-        </ul>
-      </aside>
+    <section id="entrevistas-vazio" class="panel empty-state hidden" style="margin-top: 24px;">
+      <span class="badge gray">SEM ENTREVISTAS</span>
+      <h2>Você ainda não possui processos registrados.</h2>
+      <p>Quando você enviar um currículo para uma vaga, o acompanhamento aparecerá aqui.</p>
+      <a class="btn btn-primary" href="vagas.html">Ver vagas disponíveis</a>
     </section>
   </main>
 
   <footer class="footer"><p>Meu Futuro Profissional • Currículos, vagas e entrevistas</p></footer>
-  <script src="firebase-loader.js?v=20260911-2"></script>
+  <script src="firebase-loader.js?v=20260911-3"></script>
 </body>
 </html>
