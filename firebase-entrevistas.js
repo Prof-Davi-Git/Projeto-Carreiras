@@ -40,11 +40,17 @@
   function estrelasDaNota(valor) {
     const n = numeroSeguro(valor);
     if (n === null || n <= 0) return 0;
-    if (n < 2) return 1;
-    if (n < 4) return 2;
-    if (n < 6) return 3;
-    if (n < 8) return 4;
-    return 5;
+    return Math.min(5, Math.ceil(n / 2));
+  }
+
+  function classificacao(valor) {
+    const qtd = estrelasDaNota(valor);
+    if (qtd === 5) return "Excelente desempenho";
+    if (qtd === 4) return "Muito bom desempenho";
+    if (qtd === 3) return "Bom desempenho";
+    if (qtd === 2) return "Em desenvolvimento";
+    if (qtd === 1) return "Precisa evoluir";
+    return "Sem classificação";
   }
 
   function criar(tag, classe = "", texto = "") {
@@ -54,30 +60,52 @@
     return el;
   }
 
-  function blocoNota(rotulo, valor) {
+  function criarLinhaEstrelas(valor, classeExtra = "") {
+    const quantidade = estrelasDaNota(valor);
+    const estrelas = criar("div", `avaliacao-estrelas ${classeExtra}`.trim());
+    estrelas.setAttribute("aria-label", `${quantidade} de 5 estrelas`);
+
+    for (let i = 1; i <= 5; i += 1) {
+      const estrela = criar("span", i <= quantidade ? "estrela ativa" : "estrela", "★");
+      estrela.setAttribute("aria-hidden", "true");
+      estrelas.appendChild(estrela);
+    }
+
+    return estrelas;
+  }
+
+  function blocoNota(rotulo, valor, valorNumerico = null) {
     const box = criar("div", "avaliacao-nota-box");
     box.append(
       criar("span", "avaliacao-nota-label", rotulo),
       criar("strong", "avaliacao-nota-valor", valor)
     );
+
+    if (numeroSeguro(valorNumerico) !== null) {
+      box.appendChild(criarLinhaEstrelas(valorNumerico, "avaliacao-estrelas-mini"));
+    }
+
     return box;
   }
 
   function criarEstrelas(valor) {
     const quantidade = estrelasDaNota(valor);
-    const wrap = criar("div", "avaliacao-estrelas-wrap");
-    const estrelas = criar("div", "avaliacao-estrelas");
-    estrelas.setAttribute("aria-label", `${quantidade} de 5 estrelas`);
+    const wrap = criar("section", "avaliacao-estrelas-wrap");
 
-    for (let i = 1; i <= 5; i += 1) {
-      estrelas.appendChild(criar("span", i <= quantidade ? "estrela ativa" : "estrela", i <= quantidade ? "★" : "☆"));
-    }
+    const texto = criar("div", "avaliacao-estrelas-copy");
+    texto.append(
+      criar("span", "avaliacao-estrelas-titulo", "AVALIAÇÃO GERAL"),
+      criar("strong", "avaliacao-estrelas-classificacao", classificacao(valor)),
+      criar("span", "avaliacao-estrelas-nota", `Média final: ${nota(valor)} / 10`)
+    );
 
-    wrap.append(
-      criar("span", "avaliacao-estrelas-titulo", "Resultado geral"),
-      estrelas,
+    const visual = criar("div", "avaliacao-estrelas-visual");
+    visual.append(
+      criarLinhaEstrelas(valor),
       criar("strong", "avaliacao-estrelas-texto", `${quantidade} de 5 estrelas`)
     );
+
+    wrap.append(texto, visual);
     return wrap;
   }
 
@@ -132,15 +160,19 @@
     }
 
     const media = mediaFinal(avaliacao);
+
+    // O resultado em estrelas fica no topo da avaliação para ser imediatamente visível.
+    card.appendChild(criarEstrelas(media));
+
     const resumo = criar("div", "avaliacao-resumo-grid");
     resumo.append(
       blocoNota("Data da entrevista", formatarData(avaliacao.entrevistaData)),
-      blocoNota("Nota do currículo", `${nota(avaliacao.notaCurriculo)} / 10`),
-      blocoNota("Nota da entrevista", `${nota(avaliacao.notaEntrevista)} / 10`),
-      blocoNota("Média final", `${nota(media)} / 10`)
+      blocoNota("Nota do currículo", `${nota(avaliacao.notaCurriculo)} / 10`, avaliacao.notaCurriculo),
+      blocoNota("Nota da entrevista", `${nota(avaliacao.notaEntrevista)} / 10`, avaliacao.notaEntrevista),
+      blocoNota("Média final", `${nota(media)} / 10`, media)
     );
 
-    card.append(resumo, criarEstrelas(media), criarCriterios(avaliacao), criarFeedback(avaliacao));
+    card.append(resumo, criarCriterios(avaliacao), criarFeedback(avaliacao));
     return card;
   }
 
