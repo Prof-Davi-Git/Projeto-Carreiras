@@ -7,6 +7,27 @@
   const resumo = document.querySelector("#professor-resumo");
   const busca = document.querySelector("#professor-busca");
   const status = document.querySelector("#professor-status");
+  const btnAvaliacoesAnteriores = document.querySelector("#btn-lancar-avaliacoes-anteriores");
+  const resultadoAvaliacoesAnteriores = document.querySelector("#resultado-avaliacoes-anteriores");
+
+  const VAGA_SUPORTE = {
+    vagaId: "assistente-de-suporte-de-ti",
+    vagaTitulo: "Assistente de Suporte de TI",
+    empresa: "Conecta Tech",
+    area: "Tecnologia",
+    entrevistaData: "2026-09-04"
+  };
+
+  const ALUNOS_AVALIACAO_0409 = [
+    { perfilNome: "Beatriz S. P.", nomeCompleto: "BEATRIZ SANTANA PEREIRA" },
+    { perfilNome: "Luis F. B. M.", nomeCompleto: "LUIS FERNANDO BARBOSA MUNIZ" },
+    { perfilNome: "Luiz V. F. C.", nomeCompleto: "LUIZ VICTOR FERNANDES CAETANO" },
+    { perfilNome: "Micaelly F. A.", nomeCompleto: "MICAELLY FIGUEREDO DE ABREU" },
+    { perfilNome: "Miguel H. O. G.", nomeCompleto: "MIGUEL HENRIQUE OLIVEIRA GUEDES" },
+    { perfilNome: "Murillo H. S.", nomeCompleto: "MURILLO HENRIQUE DE SOUZA" }
+  ];
+
+  const FEEDBACK_POSITIVO = "Excelente desempenho na entrevista. Demonstrou boa comunicação, segurança nas respostas, domínio das informações apresentadas e boa adequação à vaga. Mantenha esse nível de preparação e postura profissional nas próximas oportunidades.";
 
   let processos = [];
 
@@ -29,8 +50,17 @@
     return bloco;
   }
 
-  function resumoCurriculo(curriculo = {}) {
+  function resumoCurriculo(curriculo = {}, historico = false) {
     const box = el("div", "curriculo-preview-professor");
+
+    if (historico && !Object.keys(curriculo || {}).length) {
+      box.append(
+        el("h3", "", "Avaliação anterior"),
+        el("p", "", "Entrevista realizada antes do envio de um currículo por este sistema.")
+      );
+      return box;
+    }
+
     box.appendChild(el("h3", "", curriculo.nome || "Currículo enviado"));
     if (curriculo.vagaAlvo) box.appendChild(el("p", "", curriculo.vagaAlvo));
 
@@ -88,6 +118,7 @@
   }
 
   function criarFormAvaliacao(processo, sessao) {
+    const existeAvaliacao = Boolean(processo.avaliacao);
     const avaliacao = processo.avaliacao || {};
     const criterios = avaliacao.criterios || {};
     const form = el("form", "avaliacao-form");
@@ -133,7 +164,7 @@
     feedbackLabel.appendChild(feedback);
     form.appendChild(feedbackLabel);
 
-    const salvar = el("button", "btn btn-primary", avaliacao ? "Salvar avaliação" : "Publicar avaliação");
+    const salvar = el("button", "btn btn-primary", existeAvaliacao ? "Salvar avaliação" : "Publicar avaliação");
     salvar.type = "submit";
     form.appendChild(salvar);
 
@@ -163,6 +194,8 @@
           vagaId: processo.vagaId,
           vagaTitulo: processo.vagaTitulo,
           empresa: processo.empresa || "",
+          area: processo.area || "",
+          submissaoId: processo.submissaoId || (processo.historico ? "" : processo.id),
           entrevistaData: form.elements.entrevistaData.value || "",
           notaCurriculo: Number(form.elements.notaCurriculo.value) || 0,
           criterios: criteriosNovos,
@@ -208,7 +241,7 @@
     if (processo.empresa) texto.appendChild(el("p", "", processo.empresa));
     const badge = el("span", processo.avaliacao ? "badge" : "badge gray", processo.avaliacao ? "AVALIADO" : "AGUARDANDO AVALIAÇÃO");
     head.append(texto, badge);
-    esquerda.append(head, resumoCurriculo(processo.curriculoSnapshot || {}));
+    esquerda.append(head, resumoCurriculo(processo.curriculoSnapshot || {}, processo.historico));
 
     const direita = el("div");
     direita.appendChild(criarFormAvaliacao(processo, sessao));
@@ -233,15 +266,47 @@
   }
 
   async function carregar(sessao) {
-    const snap = await api.db.collection("submissoes").get();
-    processos = [];
+    const [submissoesSnap, avaliacoesSnap] = await Promise.all([
+      api.db.collection("submissoes").get(),
+      api.db.collection("avaliacoes").get()
+    ]);
 
-    for (const doc of snap.docs) {
-      const dados = { id: doc.id, ...doc.data() };
-      const avaliacaoSnap = await api.db.collection("avaliacoes").doc(doc.id).get();
-      if (avaliacaoSnap.exists) dados.avaliacao = avaliacaoSnap.data();
-      processos.push(dados);
-    }
+    const submissoes = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const avaliacoesPorId = new Map(avaliacoes.map((avaliacao) => [avaliacao.id, avaliacao]));
+    const idsUsados = new Set();
+
+    processos = submissoes.map((dados) => {
+      const avaliacao = avaliacoesPorId.get(dados.id)
+        || avaliacoes.find((item) => item.submissaoId === dados.id)
+        || null;
+      if (avaliacao) idsUsados.add(avaliacao.id);
+      return { ...dados, avaliacao };
+    });
+
+    avaliacoes.forEach((avaliacao) => {
+      if (idsUsados.has(avaliacao.id)) return;
+      const jaRepresentada = processos.some((processo) =>
+        processo.alunoUid === avaliacao.alunoUid
+        && processo.vagaId === avaliacao.vagaId
+        && processo.avaliacao
+      );
+      if (jaRepresentada) return;
+
+      processos.push({
+        id: avaliacao.id,
+        alunoUid: avaliacao.alunoUid,
+        alunoNome: avaliacao.alunoNome,
+        vagaId: avaliacao.vagaId,
+        vagaTitulo: avaliacao.vagaTitulo,
+        empresa: avaliacao.empresa || "",
+        area: avaliacao.area || "",
+        submissaoId: avaliacao.submissaoId || "",
+        curriculoSnapshot: {},
+        historico: true,
+        avaliacao
+      });
+    });
 
     processos.sort((a, b) => String(a.alunoNome || "").localeCompare(String(b.alunoNome || ""), "pt-BR"));
     lista.innerHTML = "";
@@ -251,12 +316,121 @@
     aplicarFiltro();
   }
 
+  function mostrarResultadoLote(resultados) {
+    if (!resultadoAvaliacoesAnteriores) return;
+    resultadoAvaliacoesAnteriores.replaceChildren();
+    resultadoAvaliacoesAnteriores.classList.remove("hidden");
+
+    const titulo = el("strong", "", "Resultado do lançamento:");
+    const listaResultado = el("ul", "list-clean");
+    resultados.forEach((item) => {
+      listaResultado.appendChild(el("li", "", `${item.nome}: ${item.status}`));
+    });
+    resultadoAvaliacoesAnteriores.append(titulo, listaResultado);
+  }
+
+  async function lancarAvaliacoesAnteriores(sessao) {
+    if (!btnAvaliacoesAnteriores) return;
+
+    btnAvaliacoesAnteriores.disabled = true;
+    btnAvaliacoesAnteriores.textContent = "Lançando avaliações...";
+
+    try {
+      const [usuariosSnap, submissoesSnap, avaliacoesSnap] = await Promise.all([
+        api.db.collection("usuarios").get(),
+        api.db.collection("submissoes").get(),
+        api.db.collection("avaliacoes").get()
+      ]);
+
+      const usuarios = usuariosSnap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
+      const submissoes = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const resultados = [];
+
+      for (const alvo of ALUNOS_AVALIACAO_0409) {
+        const perfil = usuarios.find((usuario) =>
+          usuario.role === "aluno"
+          && String(usuario.nome || "").trim().toLowerCase() === alvo.perfilNome.toLowerCase()
+        );
+
+        if (!perfil) {
+          resultados.push({
+            nome: alvo.nomeCompleto,
+            status: "aguardando o primeiro login do aluno no sistema"
+          });
+          continue;
+        }
+
+        const submissao = submissoes.find((item) =>
+          item.alunoUid === perfil.uid
+          && item.vagaId === VAGA_SUPORTE.vagaId
+        ) || null;
+
+        const avaliacaoExistente = avaliacoes.find((item) =>
+          item.alunoUid === perfil.uid
+          && item.vagaId === VAGA_SUPORTE.vagaId
+        ) || null;
+
+        const avaliacaoId = avaliacaoExistente?.id
+          || submissao?.id
+          || `historico__${perfil.uid}__${VAGA_SUPORTE.vagaId}`;
+
+        await api.db.collection("avaliacoes").doc(avaliacaoId).set({
+          alunoUid: perfil.uid,
+          alunoNome: alvo.nomeCompleto,
+          vagaId: VAGA_SUPORTE.vagaId,
+          vagaTitulo: VAGA_SUPORTE.vagaTitulo,
+          empresa: VAGA_SUPORTE.empresa,
+          area: VAGA_SUPORTE.area,
+          submissaoId: submissao?.id || avaliacaoExistente?.submissaoId || "",
+          entrevistaData: VAGA_SUPORTE.entrevistaData,
+          notaCurriculo: 10,
+          criterios: {
+            comunicacao: 2,
+            dominioCurriculo: 2,
+            adequacaoVaga: 2,
+            resolucaoProblema: 2,
+            postura: 2
+          },
+          notaEntrevista: 10,
+          feedback: FEEDBACK_POSITIVO,
+          professorUid: sessao.usuario.uid,
+          professorNome: sessao.perfil.nome || "Professor",
+          origem: "avaliacao-anterior-0409",
+          atualizadoEm: api.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        resultados.push({
+          nome: alvo.nomeCompleto,
+          status: avaliacaoExistente ? "avaliação atualizada com nota 10 e novo feedback" : "avaliação publicada com nota 10"
+        });
+      }
+
+      mostrarResultadoLote(resultados);
+      btnAvaliacoesAnteriores.textContent = "Avaliações processadas ✓";
+      await carregar(sessao);
+      setTimeout(() => {
+        btnAvaliacoesAnteriores.textContent = "Lançar avaliações dos 6 alunos";
+      }, 2500);
+    } catch (erro) {
+      console.error("Falha no lançamento em lote:", erro);
+      btnAvaliacoesAnteriores.textContent = "Tentar novamente";
+      if (resultadoAvaliacoesAnteriores) {
+        resultadoAvaliacoesAnteriores.classList.remove("hidden");
+        resultadoAvaliacoesAnteriores.textContent = "Não foi possível concluir o lançamento. Atualize a página e tente novamente.";
+      }
+    } finally {
+      btnAvaliacoesAnteriores.disabled = false;
+    }
+  }
+
   async function iniciar() {
     const sessao = await api.exigirSessao("professor");
     if (!sessao) return;
     api.decorarTopo(sessao);
     busca.addEventListener("input", aplicarFiltro);
     status.addEventListener("change", aplicarFiltro);
+    btnAvaliacoesAnteriores?.addEventListener("click", () => lancarAvaliacoesAnteriores(sessao));
     await carregar(sessao);
   }
 
