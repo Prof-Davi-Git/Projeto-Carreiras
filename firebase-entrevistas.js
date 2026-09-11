@@ -220,20 +220,23 @@
 
     const envios = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    const porId = new Map(avaliacoes.map((avaliacao) => [avaliacao.id, avaliacao]));
+    if (!avaliacoes.length) return;
 
-    function acharAvaliacao(envio) {
-      return porId.get(envio.id)
-        || avaliacoes.find((avaliacao) => avaliacao.submissaoId === envio.id)
-        || avaliacoes.find((avaliacao) => avaliacao.vagaId === envio.vagaId)
-        || null;
-    }
+    const enviosPorId = new Map(envios.map((envio) => [envio.id, envio]));
 
-    const resultados = envios
-      .map((envio) => ({ envio, avaliacao: acharAvaliacao(envio) }))
-      .filter((item) => item.avaliacao);
+    const resultados = avaliacoes.map((avaliacao) => {
+      const envio = enviosPorId.get(avaliacao.submissaoId || avaliacao.id)
+        || envios.find((item) => item.vagaId === avaliacao.vagaId)
+        || {
+          id: avaliacao.submissaoId || avaliacao.id,
+          vagaId: avaliacao.vagaId,
+          vagaTitulo: avaliacao.vagaTitulo,
+          empresa: avaliacao.empresa || "",
+          area: avaliacao.area || ""
+        };
 
-    if (!resultados.length) return;
+      return { envio, avaliacao };
+    });
 
     resultados.sort((a, b) =>
       Number(b.avaliacao?.atualizadoEm?.seconds || b.envio?.atualizadoEm?.seconds || 0)
