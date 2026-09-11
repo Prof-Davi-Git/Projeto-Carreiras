@@ -46,7 +46,96 @@
 
 .professor-lista {
   display: grid;
-  gap: 14px;
+  gap: 22px;
+}
+
+.vaga-grupo-professor {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f7f9fc;
+  overflow: hidden;
+}
+
+.vaga-grupo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.vaga-grupo-textos h2,
+.vaga-grupo-textos p {
+  margin: 0;
+}
+
+.vaga-grupo-textos h2 {
+  margin-top: 3px;
+  font-size: 1.25rem;
+}
+
+.vaga-grupo-empresa {
+  margin-top: 3px !important;
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.vaga-grupo-contadores {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vaga-contador {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #edf1f5;
+  color: #536174;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.vaga-contador-ok {
+  background: #eaf8f1;
+  color: #18794e;
+}
+
+.vaga-contador-pendente {
+  background: #fff4df;
+  color: #8a5b00;
+}
+
+.vaga-grupo-alunos {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.vaga-grupo-alunos .processo-card {
+  border-radius: 13px;
+  box-shadow: none;
+}
+
+.vaga-grupo-alunos .processo-card.processo-card-compacto {
+  padding: 15px 16px;
+}
+
+.vaga-grupo-alunos .processo-head h2 {
+  font-size: 1.05rem;
+}
+
+.vaga-grupo-alunos .processo-head .small-label {
+  font-size: .7rem;
 }
 
 .processo-card {
@@ -97,7 +186,7 @@
 }
 
 .processo-card-aberto {
-  box-shadow: 0 14px 34px rgba(20, 32, 51, 0.08);
+  box-shadow: 0 14px 34px rgba(20, 32, 51, 0.08) !important;
 }
 
 .processo-head {
@@ -191,9 +280,14 @@
     grid-template-columns: 1fr;
   }
 
-  .professor-toolbar {
+  .professor-toolbar,
+  .vaga-grupo-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .vaga-grupo-contadores {
+    justify-content: flex-start;
   }
 
   .processo-card-resumo {
@@ -213,5 +307,13 @@
 
   .processo-card-toggle {
     width: 100%;
+  }
+
+  .vaga-grupo-header {
+    padding: 16px;
+  }
+
+  .vaga-grupo-alunos {
+    padding: 0 8px 8px;
   }
 }
