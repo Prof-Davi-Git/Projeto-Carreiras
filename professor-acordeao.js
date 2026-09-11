@@ -118,10 +118,15 @@
     const totalEl = grupo.querySelector('[data-contador="enviados"]');
     const avaliadosEl = grupo.querySelector('[data-contador="avaliados"]');
     const pendentesEl = grupo.querySelector('[data-contador="pendentes"]');
+    const botaoGrupo = grupo.querySelector(".vaga-grupo-toggle");
+    const alunos = grupo.querySelector(".vaga-grupo-alunos");
 
     if (totalEl) totalEl.textContent = `${cards.length} enviado${cards.length === 1 ? "" : "s"}`;
     if (avaliadosEl) avaliadosEl.textContent = `${avaliados} avaliado${avaliados === 1 ? "" : "s"}`;
     if (pendentesEl) pendentesEl.textContent = `${pendentes} aguardando`;
+    if (botaoGrupo && alunos?.hidden) {
+      botaoGrupo.textContent = `Exibir alunos (${cards.length})`;
+    }
   }
 
   function criarGrupo(vagaTitulo, cards) {
@@ -152,6 +157,9 @@
       textos.appendChild(empresa);
     }
 
+    const acoesGrupo = document.createElement("div");
+    acoesGrupo.className = "vaga-grupo-acoes";
+
     const contadores = document.createElement("div");
     contadores.className = "vaga-grupo-contadores";
 
@@ -168,11 +176,30 @@
     pendente.dataset.contador = "pendentes";
 
     contadores.append(enviado, avaliado, pendente);
-    header.append(textos, contadores);
+
+    const botaoGrupo = document.createElement("button");
+    botaoGrupo.type = "button";
+    botaoGrupo.className = "btn btn-secondary vaga-grupo-toggle";
+    botaoGrupo.textContent = `Exibir alunos (${cards.length})`;
+    botaoGrupo.setAttribute("aria-expanded", "false");
+
+    acoesGrupo.append(contadores, botaoGrupo);
+    header.append(textos, acoesGrupo);
 
     const alunos = document.createElement("div");
     alunos.className = "vaga-grupo-alunos";
+    alunos.hidden = true;
     cards.forEach((card) => alunos.appendChild(card));
+
+    botaoGrupo.addEventListener("click", () => {
+      const abrir = alunos.hidden;
+      alunos.hidden = !abrir;
+      botaoGrupo.setAttribute("aria-expanded", String(abrir));
+      botaoGrupo.textContent = abrir
+        ? "Ocultar alunos"
+        : `Exibir alunos (${cards.length})`;
+      grupo.classList.toggle("vaga-grupo-aberto", abrir);
+    });
 
     grupo.append(header, alunos);
     atualizarContadoresGrupo(grupo);
