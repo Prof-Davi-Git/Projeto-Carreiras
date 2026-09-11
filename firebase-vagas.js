@@ -2,22 +2,73 @@
   const api = window.FirebaseCarreiras;
   if (!api) return;
 
+  const AGENDA_VAGAS = {
+    "assistente-de-suporte-de-ti": ["2026-09-04", "2026-09-11"]
+  };
+
   function textoMeta(card, prefixo) {
     const item = [...card.querySelectorAll(".meta-item")]
       .find((el) => el.textContent.trim().toLowerCase().startsWith(prefixo.toLowerCase()));
     return item ? item.textContent.split(":").slice(1).join(":").trim() : "";
   }
 
-  function normalizarVagaAberta(card) {
-    const badge = card.querySelector(".badge");
-    if (badge) {
-      badge.textContent = "VAGA ABERTA";
-      badge.classList.add("gray");
+  function hojeLocalISO() {
+    const agora = new Date();
+    const ano = agora.getFullYear();
+    const mes = String(agora.getMonth() + 1).padStart(2, "0");
+    const dia = String(agora.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  function formatarData(dataISO) {
+    const [ano, mes, dia] = String(dataISO).split("-");
+    return ano && mes && dia ? `${dia}/${mes}/${ano}` : dataISO;
+  }
+
+  function datasDaVaga(card, vagaId) {
+    const doHtml = String(card.dataset.entrevistaDatas || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    return doHtml.length ? doHtml : (AGENDA_VAGAS[vagaId] || []);
+  }
+
+  function agendaEncerrada(datas) {
+    if (!datas.length) return false;
+    const validas = [...datas].filter((data) => /^\d{4}-\d{2}-\d{2}$/.test(data)).sort();
+    if (!validas.length) return false;
+    return hojeLocalISO() > validas[validas.length - 1];
+  }
+
+  function itemEntrevista(card) {
+    return [...card.querySelectorAll(".meta-item")]
+      .find((el) => el.textContent.trim().toLowerCase().startsWith("entrevista"));
+  }
+
+  function exibirAgenda(card, datas) {
+    const item = itemEntrevista(card);
+    if (!item) return;
+
+    if (!datas.length) {
+      item.textContent = "Entrevista: a definir";
+      return;
     }
 
-    const entrevista = [...card.querySelectorAll(".meta-item")]
-      .find((el) => el.textContent.trim().toLowerCase().startsWith("entrevista:"));
-    if (entrevista) entrevista.textContent = "Entrevista: a definir";
+    const rotulo = datas.length > 1 ? "Entrevistas" : "Entrevista";
+    item.textContent = `${rotulo}: ${datas.map(formatarData).join(" e ")}`;
+  }
+
+  function definirBadge(card, texto, destaque = false) {
+    const badge = card.querySelector(".badge");
+    if (!badge) return;
+    badge.textContent = texto;
+    badge.classList.toggle("gray", !destaque);
+  }
+
+  function botaoSecundario(botao) {
+    botao.classList.remove("btn-primary");
+    botao.classList.add("btn-secondary");
   }
 
   async function iniciar() {
@@ -34,37 +85,63 @@
         .get()
     ]);
 
-    const vagasJaUtilizadas = new Set();
-
+    const submissoesPorVaga = new Map();
     submissoesSnap.docs.forEach((doc) => {
-      const vagaId = doc.data()?.vagaId;
-      if (vagaId) vagasJaUtilizadas.add(vagaId);
+      const dados = { id: doc.id, ...doc.data() };
+      if (dados.vagaId) submissoesPorVaga.set(dados.vagaId, dados);
     });
 
+    const avaliacoesPorVaga = new Map();
     avaliacoesSnap.docs.forEach((doc) => {
-      const vagaId = doc.data()?.vagaId;
-      if (vagaId) vagasJaUtilizadas.add(vagaId);
+      const dados = { id: doc.id, ...doc.data() };
+      if (dados.vagaId) avaliacoesPorVaga.set(dados.vagaId, dados);
     });
 
     let visiveis = 0;
 
     document.querySelectorAll(".vaga-card").forEach((card) => {
       const titulo = card.querySelector("h3")?.textContent.trim();
-      const botao = card.querySelector('a[href^="curriculos.html"]');
+      const botao = card.querySelector('a[href^="curriculos.html"], a.btn');
       if (!titulo || !botao) return;
 
       const empresaTexto = card.querySelector("p")?.textContent.trim() || "";
       const empresa = empresaTexto.replace(/^Empresa fictícia:\s*/i, "");
       const area = textoMeta(card, "Área:");
-      const vagaId = api.slug(titulo);
+      const vagaId = card.dataset.vagaId || api.slug(titulo);
+      const datas = datasDaVaga(card, vagaId);
 
-      if (vagasJaUtilizadas.has(vagaId)) {
+      if (agendaEncerrada(datas)) {
         card.remove();
         return;
       }
 
-      normalizarVagaAberta(card);
+      exibirAgenda(card, datas);
       visiveis += 1;
+
+      const avaliacao = avaliacoesPorVaga.get(vagaId);
+      const submissao = submissoesPorVaga.get(vagaId);
+
+      if (avaliacao) {
+        definirBadge(card, "CONCLUÍDA", true);
+        botao.href = "entrevistas.html";
+        botao.textContent = "Ver resultado da entrevista";
+        botaoSecundario(botao);
+        botao.removeAttribute("aria-disabled");
+        botao.style.pointerEvents = "";
+        return;
+      }
+
+      if (submissao) {
+        definirBadge(card, "EM PROCESSO");
+        botao.removeAttribute("href");
+        botao.textContent = "Currículo já enviado";
+        botaoSecundario(botao);
+        botao.setAttribute("aria-disabled", "true");
+        botao.style.pointerEvents = "none";
+        return;
+      }
+
+      definirBadge(card, "VAGA ABERTA");
 
       const params = new URLSearchParams({ vaga: vagaId, titulo });
       if (empresa) params.set("empresa", empresa);
@@ -72,6 +149,10 @@
 
       botao.href = `curriculos.html?${params.toString()}`;
       botao.textContent = "Preparar currículo para esta vaga";
+      botao.classList.remove("btn-secondary");
+      botao.classList.add("btn-primary");
+      botao.removeAttribute("aria-disabled");
+      botao.style.pointerEvents = "";
     });
 
     if (visiveis === 0) {
@@ -80,9 +161,9 @@
       const aviso = document.createElement("section");
       aviso.className = "panel empty-state";
       aviso.innerHTML = `
-        <span class="badge gray">SEM NOVAS VAGAS</span>
-        <h2>Você já se candidatou às vagas disponíveis.</h2>
-        <p>Acompanhe seus resultados na área de Entrevistas.</p>
+        <span class="badge gray">SEM VAGAS DISPONÍVEIS</span>
+        <h2>Não há vagas disponíveis neste momento.</h2>
+        <p>Os processos concluídos continuam disponíveis na área de Entrevistas.</p>
         <a class="btn btn-primary" href="entrevistas.html">Ver minhas entrevistas</a>
       `;
       grid.replaceWith(aviso);
