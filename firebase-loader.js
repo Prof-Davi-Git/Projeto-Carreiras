@@ -51,9 +51,9 @@
       };
 
       if (scripts[pagina]) {
-        const versao = ["vagas.html", "entrevistas.html"].includes(pagina)
-          ? "20260911-3"
-          : "20260905-1";
+        let versao = "20260905-1";
+        if (pagina === "vagas.html") versao = "20260911-3";
+        if (pagina === "entrevistas.html") versao = "20260911-4";
         await carregar(local(`${scripts[pagina]}?v=${versao}`));
       }
     } catch (erro) {
