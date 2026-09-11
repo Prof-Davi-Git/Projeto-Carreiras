@@ -52,7 +52,7 @@
 
       if (scripts[pagina]) {
         const versao = ["vagas.html", "entrevistas.html", "professor.html"].includes(pagina)
-          ? "20260911-5"
+          ? "20260911-6"
           : "20260905-1";
         await carregar(local(`${scripts[pagina]}?v=${versao}`));
       }
