@@ -46,13 +46,58 @@
 
 .professor-lista {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .processo-card {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
   gap: 22px;
+}
+
+.processo-card.processo-card-compacto {
+  display: block;
+  padding: 18px 20px;
+}
+
+.processo-card-resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.processo-card-resumo .processo-head {
+  flex: 1;
+  margin: 0;
+}
+
+.processo-card-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.processo-card-toggle {
+  min-width: 170px;
+}
+
+.processo-card-detalhes {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
+  gap: 22px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.processo-card-detalhes[hidden] {
+  display: none !important;
+}
+
+.processo-card-aberto {
+  box-shadow: 0 14px 34px rgba(20, 32, 51, 0.08);
 }
 
 .processo-head {
@@ -141,7 +186,8 @@
 }
 
 @media (max-width: 900px) {
-  .processo-card {
+  .processo-card,
+  .processo-card-detalhes {
     grid-template-columns: 1fr;
   }
 
@@ -149,10 +195,23 @@
     align-items: stretch;
     flex-direction: column;
   }
+
+  .processo-card-resumo {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .processo-card-acoes {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 560px) {
   .avaliacao-grid {
     grid-template-columns: 1fr;
+  }
+
+  .processo-card-toggle {
+    width: 100%;
   }
 }
