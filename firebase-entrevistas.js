@@ -166,44 +166,37 @@
   }
 
   function criarCard(envio, avaliacao) {
-    const card = criar("article", `saved-card entrevista-card-compacto${avaliacao ? " avaliado" : ""}`);
+    const card = criar("article", "saved-card entrevista-card-compacto avaliado");
     const topo = criar("div", "entrevista-card-topo");
     const resumo = criar("div", "entrevista-resumo");
     const textos = criar("div", "entrevista-resumo-textos");
 
     textos.append(
       criar("p", "small-label", envio.empresa || "PROCESSO SELETIVO"),
-      criar("h3", "", envio.vagaTitulo || "Vaga")
+      criar("h3", "", envio.vagaTitulo || "Vaga"),
+      criar("p", "entrevista-resumo-meta", `Entrevista: ${formatarData(avaliacao.entrevistaData)}`)
     );
-
-    const linha = avaliacao
-      ? `Entrevista: ${formatarData(avaliacao.entrevistaData)}`
-      : "Currículo enviado • aguardando avaliação";
-    textos.appendChild(criar("p", "entrevista-resumo-meta", linha));
 
     resumo.append(criarIconeEntrevista(), textos);
 
     const lateral = criar("div", "entrevista-card-lateral");
-    lateral.appendChild(criar("span", avaliacao ? "badge" : "badge gray", avaliacao ? "RESULTADO DISPONÍVEL" : "EM ANDAMENTO"));
+    lateral.appendChild(criar("span", "badge", "RESULTADO DISPONÍVEL"));
 
-    const botao = criar("button", avaliacao ? "btn btn-primary btn-resultado" : "btn btn-secondary btn-resultado", avaliacao ? "Exibir resultado da entrevista" : "Resultado ainda não disponível");
+    const botao = criar("button", "btn btn-primary btn-resultado", "Exibir resultado da entrevista");
     botao.type = "button";
-    if (!avaliacao) botao.disabled = true;
     lateral.appendChild(botao);
 
     topo.append(resumo, lateral);
     card.appendChild(topo);
 
-    if (avaliacao) {
-      const detalhes = criarDetalhes(avaliacao);
-      botao.setAttribute("aria-expanded", "false");
-      botao.addEventListener("click", () => {
-        const fechado = detalhes.classList.toggle("hidden");
-        botao.setAttribute("aria-expanded", String(!fechado));
-        botao.textContent = fechado ? "Exibir resultado da entrevista" : "Ocultar resultado";
-      });
-      card.appendChild(detalhes);
-    }
+    const detalhes = criarDetalhes(avaliacao);
+    botao.setAttribute("aria-expanded", "false");
+    botao.addEventListener("click", () => {
+      const fechado = detalhes.classList.toggle("hidden");
+      botao.setAttribute("aria-expanded", String(!fechado));
+      botao.textContent = fechado ? "Exibir resultado da entrevista" : "Ocultar resultado";
+    });
+    card.appendChild(detalhes);
 
     return card;
   }
@@ -222,16 +215,10 @@
         .get()
     ]);
 
-    const envios = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const alvo = document.querySelector("#entrevistas-dinamicas");
-    const vazio = document.querySelector("#entrevistas-vazio");
     if (!alvo) return;
 
-    if (!envios.length) {
-      vazio?.classList.remove("hidden");
-      return;
-    }
-
+    const envios = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const porId = new Map(avaliacoes.map((avaliacao) => [avaliacao.id, avaliacao]));
 
@@ -242,19 +229,28 @@
         || null;
     }
 
-    envios.sort((a, b) => String(b.atualizadoEm?.seconds || 0).localeCompare(String(a.atualizadoEm?.seconds || 0)));
+    const resultados = envios
+      .map((envio) => ({ envio, avaliacao: acharAvaliacao(envio) }))
+      .filter((item) => item.avaliacao);
+
+    if (!resultados.length) return;
+
+    resultados.sort((a, b) =>
+      Number(b.avaliacao?.atualizadoEm?.seconds || b.envio?.atualizadoEm?.seconds || 0)
+      - Number(a.avaliacao?.atualizadoEm?.seconds || a.envio?.atualizadoEm?.seconds || 0)
+    );
 
     const cabecalho = criar("div", "section-head compact entrevistas-lista-head");
     const texto = criar("div");
     texto.append(
       criar("p", "small-label", "MINHAS ENTREVISTAS"),
-      criar("h2", "", "Processos e resultados"),
-      criar("p", "", "Cada entrevista fica resumida. Abra somente o resultado que deseja consultar.")
+      criar("h2", "", "Resultados das entrevistas"),
+      criar("p", "", "Abra o resultado da entrevista que deseja consultar.")
     );
     cabecalho.appendChild(texto);
 
     const lista = criar("div", "entrevista-lista-compacta");
-    envios.forEach((envio) => lista.appendChild(criarCard(envio, acharAvaliacao(envio))));
+    resultados.forEach(({ envio, avaliacao }) => lista.appendChild(criarCard(envio, avaliacao)));
 
     alvo.replaceChildren(cabecalho, lista);
   }
