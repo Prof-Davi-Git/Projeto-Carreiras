@@ -25,15 +25,26 @@
     if (!sessao) return;
     api.decorarTopo(sessao);
 
-    const submissoesSnap = await api.db.collection("submissoes")
-      .where("alunoUid", "==", sessao.usuario.uid)
-      .get();
+    const [submissoesSnap, avaliacoesSnap] = await Promise.all([
+      api.db.collection("submissoes")
+        .where("alunoUid", "==", sessao.usuario.uid)
+        .get(),
+      api.db.collection("avaliacoes")
+        .where("alunoUid", "==", sessao.usuario.uid)
+        .get()
+    ]);
 
-    const vagasJaEnviadas = new Set(
-      submissoesSnap.docs
-        .map((doc) => doc.data()?.vagaId)
-        .filter(Boolean)
-    );
+    const vagasJaUtilizadas = new Set();
+
+    submissoesSnap.docs.forEach((doc) => {
+      const vagaId = doc.data()?.vagaId;
+      if (vagaId) vagasJaUtilizadas.add(vagaId);
+    });
+
+    avaliacoesSnap.docs.forEach((doc) => {
+      const vagaId = doc.data()?.vagaId;
+      if (vagaId) vagasJaUtilizadas.add(vagaId);
+    });
 
     let visiveis = 0;
 
@@ -47,7 +58,7 @@
       const area = textoMeta(card, "Área:");
       const vagaId = api.slug(titulo);
 
-      if (vagasJaEnviadas.has(vagaId)) {
+      if (vagasJaUtilizadas.has(vagaId)) {
         card.remove();
         return;
       }
@@ -71,7 +82,7 @@
       aviso.innerHTML = `
         <span class="badge gray">SEM NOVAS VAGAS</span>
         <h2>Você já se candidatou às vagas disponíveis.</h2>
-        <p>Acompanhe seus processos e resultados na área de Entrevistas.</p>
+        <p>Acompanhe seus resultados na área de Entrevistas.</p>
         <a class="btn btn-primary" href="entrevistas.html">Ver minhas entrevistas</a>
       `;
       grid.replaceWith(aviso);
