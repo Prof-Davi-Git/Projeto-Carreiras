@@ -4,10 +4,11 @@
   const status = document.querySelector("#professor-status");
   if (!lista) return;
 
+  let agrupando = false;
+  let timerAgrupamento = null;
+
   function textoFechado(card) {
-    return card.dataset.status === "avaliado"
-      ? "Exibir avaliação"
-      : "Exibir para avaliar";
+    return card.dataset.status === "avaliado" ? "Exibir avaliação" : "Exibir para avaliar";
   }
 
   function prepararCard(card) {
@@ -82,22 +83,21 @@
     card.dataset.cabecalhoAlunoAjustado = "true";
   }
 
-  function sincronizarStatusSalvo(card) {
-    const botaoSalvar = card.querySelector('.avaliacao-form button[type="submit"]');
-    if (!botaoSalvar) return;
-
-    if (/avaliação salva/i.test(botaoSalvar.textContent || "")) {
-      card.dataset.status = "avaliado";
-      const badge = card.querySelector(".processo-head .badge");
-      if (badge) {
-        badge.textContent = "AVALIADO";
-        badge.classList.remove("gray");
-      }
-
-      const toggle = card.querySelector(".processo-card-toggle");
-      const detalhes = card.querySelector(".processo-card-detalhes");
-      if (toggle && detalhes?.hidden) toggle.textContent = "Exibir avaliação";
+  function marcarAvaliado(card) {
+    if (!card) return;
+    card.dataset.status = "avaliado";
+    const badge = card.querySelector(".processo-head .badge");
+    if (badge) {
+      badge.textContent = "AVALIADO";
+      badge.classList.remove("gray");
     }
+
+    const toggle = card.querySelector(".processo-card-toggle");
+    const detalhes = card.querySelector(".processo-card-detalhes");
+    if (toggle && detalhes?.hidden) toggle.textContent = "Exibir avaliação";
+
+    const grupo = card.closest(".vaga-grupo-professor");
+    if (grupo) atualizarContadoresGrupo(grupo);
   }
 
   function atualizarContadoresGrupo(grupo) {
@@ -124,9 +124,7 @@
     if (totalEl) totalEl.textContent = `${cards.length} enviado${cards.length === 1 ? "" : "s"}`;
     if (avaliadosEl) avaliadosEl.textContent = `${avaliados} avaliado${avaliados === 1 ? "" : "s"}`;
     if (pendentesEl) pendentesEl.textContent = `${pendentes} aguardando`;
-    if (botaoGrupo && alunos?.hidden) {
-      botaoGrupo.textContent = `Exibir alunos (${cards.length})`;
-    }
+    if (botaoGrupo && alunos?.hidden) botaoGrupo.textContent = `Exibir alunos (${cards.length})`;
   }
 
   function criarGrupo(vagaTitulo, cards) {
@@ -195,9 +193,7 @@
       const abrir = alunos.hidden;
       alunos.hidden = !abrir;
       botaoGrupo.setAttribute("aria-expanded", String(abrir));
-      botaoGrupo.textContent = abrir
-        ? "Ocultar alunos"
-        : `Exibir alunos (${cards.length})`;
+      botaoGrupo.textContent = abrir ? "Ocultar alunos" : `Exibir alunos (${cards.length})`;
       grupo.classList.toggle("vaga-grupo-aberto", abrir);
     });
 
@@ -209,45 +205,8 @@
   function prepararTodos() {
     lista.querySelectorAll(".processo-card").forEach((card) => {
       prepararCard(card);
-      sincronizarStatusSalvo(card);
       if (card.dataset.acordeaoProfessor === "true") ajustarCabecalhoAluno(card);
     });
-  }
-
-  function agruparPorVaga() {
-    prepararTodos();
-
-    const cards = [...lista.querySelectorAll(".processo-card")];
-    if (!cards.length) return;
-
-    if (cards.some((card) => card.dataset.acordeaoProfessor !== "true")) {
-      setTimeout(agruparPorVaga, 30);
-      return;
-    }
-
-    const existeCardDireto = [...lista.children]
-      .some((item) => item.classList?.contains("processo-card"));
-
-    if (!existeCardDireto) {
-      lista.querySelectorAll(".vaga-grupo-professor").forEach(atualizarContadoresGrupo);
-      aplicarFiltroAgrupado();
-      return;
-    }
-
-    const grupos = new Map();
-    cards.forEach((card) => {
-      ajustarCabecalhoAluno(card);
-      const vaga = card.dataset.vagaTitulo || "Vaga";
-      if (!grupos.has(vaga)) grupos.set(vaga, []);
-      grupos.get(vaga).push(card);
-    });
-
-    const secoes = [...grupos.entries()]
-      .sort(([a], [b]) => a.localeCompare(b, "pt-BR"))
-      .map(([vaga, cardsDaVaga]) => criarGrupo(vaga, cardsDaVaga));
-
-    lista.replaceChildren(...secoes);
-    aplicarFiltroAgrupado();
   }
 
   function aplicarFiltroAgrupado() {
@@ -269,43 +228,74 @@
     });
   }
 
-  let timerAgrupamento = null;
+  function agruparPorVaga() {
+    if (agrupando) return;
+    agrupando = true;
+
+    try {
+      prepararTodos();
+
+      const cardsDiretos = [...lista.children]
+        .filter((item) => item.classList?.contains("processo-card"));
+
+      if (!cardsDiretos.length) {
+        lista.querySelectorAll(".vaga-grupo-professor").forEach(atualizarContadoresGrupo);
+        aplicarFiltroAgrupado();
+        return;
+      }
+
+      const grupos = new Map();
+      cardsDiretos.forEach((card) => {
+        ajustarCabecalhoAluno(card);
+        const vaga = card.dataset.vagaTitulo || "Vaga";
+        if (!grupos.has(vaga)) grupos.set(vaga, []);
+        grupos.get(vaga).push(card);
+      });
+
+      const secoes = [...grupos.entries()]
+        .sort(([a], [b]) => a.localeCompare(b, "pt-BR"))
+        .map(([vaga, cardsDaVaga]) => criarGrupo(vaga, cardsDaVaga));
+
+      lista.replaceChildren(...secoes);
+      aplicarFiltroAgrupado();
+    } finally {
+      agrupando = false;
+    }
+  }
+
   function agendarAgrupamento() {
     clearTimeout(timerAgrupamento);
-    timerAgrupamento = setTimeout(agruparPorVaga, 20);
+    timerAgrupamento = setTimeout(agruparPorVaga, 30);
   }
 
   const observer = new MutationObserver((mutations) => {
-    let precisaAgrupar = false;
-    let mudouFormulario = false;
-
-    for (const mutation of mutations) {
-      if (mutation.target instanceof Element && mutation.target.closest(".avaliacao-form")) {
-        mudouFormulario = true;
-      }
-
-      for (const node of mutation.addedNodes) {
-        if (!(node instanceof Element)) continue;
-        if (node.classList.contains("processo-card") || node.querySelector(".processo-card")) {
-          precisaAgrupar = true;
-        }
-      }
-    }
-
-    prepararTodos();
-
-    if (precisaAgrupar || [...lista.children].some((item) => item.classList?.contains("processo-card"))) {
-      agendarAgrupamento();
-    } else if (mudouFormulario) {
-      setTimeout(() => {
-        prepararTodos();
-        lista.querySelectorAll(".vaga-grupo-professor").forEach(atualizarContadoresGrupo);
-        aplicarFiltroAgrupado();
-      }, 0);
-    }
+    if (agrupando) return;
+    const entrouCard = mutations.some((mutation) =>
+      [...mutation.addedNodes].some((node) => node instanceof Element && node.classList.contains("processo-card"))
+    );
+    if (entrouCard) agendarAgrupamento();
   });
 
-  observer.observe(lista, { childList: true, subtree: true });
+  observer.observe(lista, { childList: true });
+
+  lista.addEventListener("submit", (event) => {
+    const form = event.target.closest?.(".avaliacao-form");
+    if (!form) return;
+    const card = form.closest(".processo-card");
+    const botaoSalvar = form.querySelector('button[type="submit"]');
+    if (!card || !botaoSalvar) return;
+
+    const statusObserver = new MutationObserver(() => {
+      if (/avaliação salva/i.test(botaoSalvar.textContent || "")) {
+        marcarAvaliado(card);
+        statusObserver.disconnect();
+        setTimeout(aplicarFiltroAgrupado, 0);
+      }
+    });
+
+    statusObserver.observe(botaoSalvar, { childList: true, subtree: true, characterData: true });
+    setTimeout(() => statusObserver.disconnect(), 10000);
+  }, true);
 
   busca?.addEventListener("input", () => setTimeout(aplicarFiltroAgrupado, 0));
   status?.addEventListener("change", () => setTimeout(aplicarFiltroAgrupado, 0));
