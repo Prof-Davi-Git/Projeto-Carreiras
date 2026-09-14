@@ -5,7 +5,8 @@
   const STORAGE_KEY = "curriculosProfissionais";
   const OWNER_KEY = "curriculosOwnerUid";
   const MAX_PDF_BYTES = 8 * 1024 * 1024;
-  const PDF_CHUNK_BYTES = 700 * 1024;
+  const PDF_CHUNK_BYTES = 450 * 1024;
+  const PDF_CHUNKS_POR_LOTE = 8;
 
   function lerLocal() {
     try {
@@ -20,26 +21,49 @@
     return curriculos.slice().sort((a, b) => String(b.atualizadoEm || "").localeCompare(String(a.atualizadoEm || "")));
   }
 
+  function idCurriculo(curriculo) {
+    return String(curriculo.id || api.slug(curriculo.tituloCurriculo || Date.now()));
+  }
+
+  function assinatura(curriculo) {
+    try {
+      return JSON.stringify(curriculo);
+    } catch (_) {
+      return `${curriculo?.id || ""}_${curriculo?.atualizadoEm || ""}`;
+    }
+  }
+
+  function snapshotLeve(curriculo = {}) {
+    const copia = { ...curriculo };
+    delete copia.foto;
+    return copia;
+  }
+
+  async function docsCurriculos(uid) {
+    return api.db.collection("usuarios").doc(uid).collection("curriculos")
+      .where("ownerUid", "==", uid)
+      .get();
+  }
+
   async function enviarTudo(uid, curriculos) {
     const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
-    const atuais = await col.get();
+    const atuais = await docsCurriculos(uid);
     const batch = api.db.batch();
     const idsLocais = new Set();
 
     curriculos.forEach((curriculo) => {
-      const id = String(curriculo.id || api.slug(curriculo.tituloCurriculo || Date.now()));
+      const id = idCurriculo(curriculo);
       idsLocais.add(id);
       batch.set(col.doc(id), {
         ...curriculo,
         id,
         ownerUid: uid,
+        tipoDocumento: "curriculo_site",
         sincronizadoEm: api.FieldValue.serverTimestamp()
       });
     });
 
     atuais.forEach((doc) => {
-      const dados = doc.data() || {};
-      if (dados.tipoDocumento === "pdf_chunk") return;
       if (!idsLocais.has(doc.id)) batch.delete(doc.ref);
     });
 
@@ -47,16 +71,14 @@
   }
 
   async function carregarNuvem(uid) {
-    const snap = await api.db.collection("usuarios").doc(uid).collection("curriculos").get();
-    return snap.docs
-      .map((doc) => ({ idDocumento: doc.id, dados: doc.data() || {} }))
-      .filter(({ dados }) => dados.tipoDocumento !== "pdf_chunk")
-      .map(({ idDocumento, dados }) => {
-        const copia = { ...dados };
-        delete copia.sincronizadoEm;
-        delete copia.ownerUid;
-        return { ...copia, id: copia.id || idDocumento };
-      });
+    const snap = await docsCurriculos(uid);
+    return snap.docs.map((doc) => {
+      const dados = { ...(doc.data() || {}) };
+      delete dados.sincronizadoEm;
+      delete dados.ownerUid;
+      delete dados.tipoDocumento;
+      return { ...dados, id: dados.id || doc.id };
+    });
   }
 
   function inserirAvisoMigracao(qtd, importar, limpar) {
@@ -133,23 +155,58 @@
     return true;
   }
 
-  function vigiarLocal(uid) {
-    let ultimo = localStorage.getItem(STORAGE_KEY) || "[]";
-    let ocupada = false;
+  function mapaLocal(curriculos) {
+    return new Map(curriculos.map((curriculo) => [idCurriculo(curriculo), assinatura(curriculo)]));
+  }
 
-    setInterval(async () => {
-      const atual = localStorage.getItem(STORAGE_KEY) || "[]";
-      if (atual === ultimo || ocupada) return;
-      ultimo = atual;
-      ocupada = true;
-      try {
-        await enviarTudo(uid, lerLocal());
-      } catch (erro) {
-        console.error("Falha ao sincronizar currículos:", erro);
-      } finally {
-        ocupada = false;
-      }
-    }, 1200);
+  async function sincronizarAlteracoes(uid, anterior, curriculos) {
+    const atual = mapaLocal(curriculos);
+    const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
+    const batch = api.db.batch();
+    let operacoes = 0;
+
+    curriculos.forEach((curriculo) => {
+      const id = idCurriculo(curriculo);
+      if (anterior.get(id) === atual.get(id)) return;
+      batch.set(col.doc(id), {
+        ...curriculo,
+        id,
+        ownerUid: uid,
+        tipoDocumento: "curriculo_site",
+        sincronizadoEm: api.FieldValue.serverTimestamp()
+      });
+      operacoes += 1;
+    });
+
+    anterior.forEach((_, id) => {
+      if (atual.has(id)) return;
+      batch.delete(col.doc(id));
+      operacoes += 1;
+    });
+
+    if (operacoes > 0) await batch.commit();
+    return atual;
+  }
+
+  function vigiarLocal(uid) {
+    let ultimoTexto = localStorage.getItem(STORAGE_KEY) || "[]";
+    let anterior = mapaLocal(lerLocal());
+    let fila = Promise.resolve();
+
+    setInterval(() => {
+      const atualTexto = localStorage.getItem(STORAGE_KEY) || "[]";
+      if (atualTexto === ultimoTexto) return;
+      ultimoTexto = atualTexto;
+      const curriculos = lerLocal();
+
+      fila = fila
+        .then(async () => {
+          anterior = await sincronizarAlteracoes(uid, anterior, curriculos);
+        })
+        .catch((erro) => {
+          console.error("Falha ao sincronizar alteração do currículo:", erro);
+        });
+    }, 2500);
   }
 
   function vagaDaUrl() {
@@ -199,9 +256,21 @@
   async function apagarChunks(uid, ids = []) {
     if (!Array.isArray(ids) || !ids.length) return;
     const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
-    const batch = api.db.batch();
-    ids.forEach((id) => batch.delete(col.doc(id)));
-    await batch.commit();
+    for (let inicio = 0; inicio < ids.length; inicio += 20) {
+      const batch = api.db.batch();
+      ids.slice(inicio, inicio + 20).forEach((id) => batch.delete(col.doc(id)));
+      await batch.commit();
+    }
+  }
+
+  async function salvarChunks(col, chunks) {
+    for (let inicio = 0; inicio < chunks.length; inicio += PDF_CHUNKS_POR_LOTE) {
+      const batch = api.db.batch();
+      chunks.slice(inicio, inicio + PDF_CHUNKS_POR_LOTE).forEach(({ id, dados }) => {
+        batch.set(col.doc(id), dados);
+      });
+      await batch.commit();
+    }
   }
 
   async function enviarPdfExterno(sessao, vaga, arquivo, atualizarStatus) {
@@ -221,7 +290,7 @@
     const col = api.db.collection("usuarios").doc(sessao.usuario.uid).collection("curriculos");
     const loteId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const ids = [];
-    const batch = api.db.batch();
+    const chunks = [];
 
     for (let indice = 0; indice < totalPartes; indice += 1) {
       const inicio = indice * PDF_CHUNK_BYTES;
@@ -229,20 +298,23 @@
       const parte = bytes.slice(inicio, fim);
       const id = `pdf_${vaga.vagaId}_${loteId}_${String(indice).padStart(3, "0")}`;
       ids.push(id);
-      batch.set(col.doc(id), {
-        tipoDocumento: "pdf_chunk",
-        vagaId: vaga.vagaId,
-        submissaoId: existente.id,
-        arquivoNome: arquivo.name,
-        indice,
-        totalPartes,
-        conteudo: firebase.firestore.Blob.fromUint8Array(parte),
-        criadoEm: api.FieldValue.serverTimestamp()
+      chunks.push({
+        id,
+        dados: {
+          tipoDocumento: "pdf_chunk",
+          vagaId: vaga.vagaId,
+          submissaoId: existente.id,
+          arquivoNome: arquivo.name,
+          indice,
+          totalPartes,
+          conteudo: firebase.firestore.Blob.fromUint8Array(parte),
+          criadoEm: api.FieldValue.serverTimestamp()
+        }
       });
     }
 
     atualizarStatus?.(`Enviando PDF (${totalPartes} parte${totalPartes === 1 ? "" : "s"})...`);
-    await batch.commit();
+    await salvarChunks(col, chunks);
 
     try {
       await existente.ref.set({
@@ -360,7 +432,7 @@
               empresa: vaga.empresa,
               area: vaga.area,
               curriculoId: curriculo.id,
-              curriculoSnapshot: curriculo,
+              curriculoSnapshot: snapshotLeve(curriculo),
               tipoCurriculo: "site",
               atualizadoEm: api.FieldValue.serverTimestamp(),
               status: "enviado"
@@ -381,7 +453,7 @@
 
     atualizar();
     const observer = new MutationObserver(atualizar);
-    observer.observe(lista, { childList: true, subtree: true });
+    observer.observe(lista, { childList: true });
   }
 
   async function iniciar() {
