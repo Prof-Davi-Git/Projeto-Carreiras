@@ -33,9 +33,7 @@
     }
 
     const popup = window.open("", "_blank");
-    if (popup) {
-      popup.document.write("<p style='font-family:Arial,sans-serif;padding:24px'>Carregando currículo em PDF...</p>");
-    }
+    if (popup) popup.document.write("<p style='font-family:Arial,sans-serif;padding:24px'>Carregando currículo em PDF...</p>");
 
     botao.disabled = true;
     const textoAnterior = botao.textContent;
@@ -142,8 +140,13 @@
     if (!submissoes.length) return;
 
     const aplicar = () => aplicarNosCards(api, submissoes);
-    const observer = new MutationObserver(aplicar);
-    observer.observe(lista, { childList: true, subtree: true });
+    let timer = null;
+    const observer = new MutationObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(aplicar, 60);
+    });
+
+    observer.observe(lista, { childList: true });
     aplicar();
   }
 
