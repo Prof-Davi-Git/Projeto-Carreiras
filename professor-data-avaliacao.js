@@ -14,15 +14,11 @@
     input.dataset.dataAvaliacaoPreparada = "true";
     input.required = true;
 
-    if (!input.value) {
-      input.value = hojeLocalISO();
-    }
+    if (!input.value) input.value = hojeLocalISO();
 
     const label = input.closest("label");
     const titulo = label?.querySelector("span");
-    if (titulo) {
-      titulo.textContent = "Data em que esta entrevista foi realizada";
-    }
+    if (titulo) titulo.textContent = "Data em que esta entrevista foi realizada";
 
     if (label && !label.querySelector(".ajuda-data-entrevista")) {
       const ajuda = document.createElement("small");
@@ -36,12 +32,20 @@
     }
   }
 
-  function prepararTodos() {
-    document.querySelectorAll(".avaliacao-form").forEach(prepararCampo);
+  function prepararDentro(no) {
+    if (!(no instanceof Element)) return;
+    if (no.matches?.(".avaliacao-form")) prepararCampo(no);
+    no.querySelectorAll?.(".avaliacao-form").forEach(prepararCampo);
   }
 
   const alvo = document.querySelector("#professor-lista") || document.body;
-  const observer = new MutationObserver(prepararTodos);
+  alvo.querySelectorAll?.(".avaliacao-form").forEach(prepararCampo);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach(prepararDentro);
+    });
+  });
+
   observer.observe(alvo, { childList: true, subtree: true });
-  prepararTodos();
 })();
