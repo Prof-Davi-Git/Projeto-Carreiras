@@ -2,9 +2,19 @@
   const api = window.FirebaseCarreiras;
   if (!api) return;
 
+  const VAGA_EM_ANDAMENTO = "assistente-de-suporte-de-ti";
   const AGENDA_VAGAS = {
-    "assistente-de-suporte-de-ti": ["2026-09-04", "2026-09-11"]
+    "assistente-de-suporte-de-ti": ["2026-09-04", "2026-09-11", "2026-09-14", "2026-09-17"]
   };
+
+  function garantirEstiloVagas() {
+    const href = new URL("vagas-ajustes.css?v=20260914-2", document.currentScript?.src || location.href).href;
+    if ([...document.styleSheets].some((sheet) => sheet.href === href)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
 
   function textoMeta(card, prefixo) {
     const item = [...card.querySelectorAll(".meta-item")]
@@ -25,13 +35,21 @@
     return ano && mes && dia ? `${dia}/${mes}/${ano}` : dataISO;
   }
 
+  function juntarDatas(datas) {
+    const formatadas = datas.map(formatarData);
+    if (formatadas.length <= 1) return formatadas.join("");
+    if (formatadas.length === 2) return `${formatadas[0]} e ${formatadas[1]}`;
+    return `${formatadas.slice(0, -1).join(", ")} e ${formatadas.at(-1)}`;
+  }
+
   function datasDaVaga(card, vagaId) {
-    const doHtml = String(card.dataset.entrevistaDatas || "")
+    const configuradas = AGENDA_VAGAS[vagaId] || [];
+    if (configuradas.length) return configuradas;
+
+    return String(card.dataset.entrevistaDatas || "")
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
-
-    return doHtml.length ? doHtml : (AGENDA_VAGAS[vagaId] || []);
   }
 
   function inscricoesEncerradas(card) {
@@ -45,7 +63,7 @@
       .find((el) => el.textContent.trim().toLowerCase().startsWith("entrevista"));
   }
 
-  function exibirAgenda(card, datas) {
+  function exibirAgenda(card, datas, vagaId) {
     const item = itemEntrevista(card);
     if (!item) return;
 
@@ -54,17 +72,35 @@
       return;
     }
 
+    const hoje = hojeLocalISO();
     const validas = datas.filter((data) => /^\d{4}-\d{2}-\d{2}$/.test(data)).sort();
-    const ultima = validas[validas.length - 1] || "";
-    const textoDatas = datas.map(formatarData).join(" e ");
+    const realizadas = validas.filter((data) => data <= hoje);
+    const futuras = validas.filter((data) => data > hoje);
 
-    if (ultima && hojeLocalISO() > ultima) {
-      item.textContent = `Entrevistas realizadas: ${textoDatas} • próximas datas: a definir`;
-      return;
+    if (realizadas.length && futuras.length) {
+      const rotuloFuturas = futuras.length === 1 ? "Próxima entrevista" : "Próximas entrevistas";
+      item.textContent = `Realizadas: ${juntarDatas(realizadas)} • ${rotuloFuturas}: ${juntarDatas(futuras)}`;
+    } else if (realizadas.length) {
+      item.textContent = `Entrevistas realizadas: ${juntarDatas(realizadas)} • próximas datas: a definir`;
+    } else {
+      item.textContent = `Entrevistas: ${juntarDatas(futuras)}`;
     }
 
-    const rotulo = datas.length > 1 ? "Entrevistas" : "Entrevista";
-    item.textContent = `${rotulo}: ${textoDatas}`;
+    if (vagaId === VAGA_EM_ANDAMENTO) {
+      item.dataset.entrevistaStatus = "ativo";
+    }
+  }
+
+  function destacarVagaEmAndamento(card, vagaId) {
+    if (vagaId !== VAGA_EM_ANDAMENTO) return;
+    card.classList.add("vaga-em-andamento");
+    if (card.querySelector(".vaga-andamento-sinal")) return;
+
+    const sinal = document.createElement("span");
+    sinal.className = "vaga-andamento-sinal";
+    sinal.textContent = "Entrevistas em andamento nesta vaga";
+    const badge = card.querySelector(".badge");
+    badge?.insertAdjacentElement("afterend", sinal);
   }
 
   function definirBadge(card, texto, destaque = false) {
@@ -95,11 +131,6 @@
 
     area = document.createElement("div");
     area.className = "vaga-acoes-firebase";
-    area.style.display = "flex";
-    area.style.gap = "8px";
-    area.style.flexWrap = "wrap";
-    area.style.marginTop = "12px";
-
     botaoBase.insertAdjacentElement("beforebegin", area);
     area.appendChild(botaoBase);
     return area;
@@ -124,9 +155,11 @@
     if (!ids.length) return;
 
     const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
-    const batch = api.db.batch();
-    ids.forEach((id) => batch.delete(col.doc(id)));
-    await batch.commit();
+    for (let inicio = 0; inicio < ids.length; inicio += 20) {
+      const batch = api.db.batch();
+      ids.slice(inicio, inicio + 20).forEach((id) => batch.delete(col.doc(id)));
+      await batch.commit();
+    }
   }
 
   async function excluirSubmissao(uid, submissao) {
@@ -135,6 +168,8 @@
   }
 
   async function iniciar() {
+    garantirEstiloVagas();
+
     const sessao = await api.exigirSessao("aluno");
     if (!sessao) return;
     api.decorarTopo(sessao);
@@ -174,7 +209,8 @@
       const areaBotoes = areaAcoes(card, botao);
       limparAcoesExtras(areaBotoes, botao);
 
-      exibirAgenda(card, datas);
+      destacarVagaEmAndamento(card, vagaId);
+      exibirAgenda(card, datas, vagaId);
 
       const avaliacao = avaliacoesPorVaga.get(vagaId);
       const submissao = submissoesPorVaga.get(vagaId);
