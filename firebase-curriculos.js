@@ -4,6 +4,8 @@
 
   const STORAGE_KEY = "curriculosProfissionais";
   const OWNER_KEY = "curriculosOwnerUid";
+  const MAX_PDF_BYTES = 8 * 1024 * 1024;
+  const PDF_CHUNK_BYTES = 700 * 1024;
 
   function lerLocal() {
     try {
@@ -36,6 +38,8 @@
     });
 
     atuais.forEach((doc) => {
+      const dados = doc.data() || {};
+      if (dados.tipoDocumento === "pdf_chunk") return;
       if (!idsLocais.has(doc.id)) batch.delete(doc.ref);
     });
 
@@ -44,12 +48,15 @@
 
   async function carregarNuvem(uid) {
     const snap = await api.db.collection("usuarios").doc(uid).collection("curriculos").get();
-    return snap.docs.map((doc) => {
-      const dados = doc.data();
-      delete dados.sincronizadoEm;
-      delete dados.ownerUid;
-      return { ...dados, id: dados.id || doc.id };
-    });
+    return snap.docs
+      .map((doc) => ({ idDocumento: doc.id, dados: doc.data() || {} }))
+      .filter(({ dados }) => dados.tipoDocumento !== "pdf_chunk")
+      .map(({ idDocumento, dados }) => {
+        const copia = { ...dados };
+        delete copia.sincronizadoEm;
+        delete copia.ownerUid;
+        return { ...copia, id: copia.id || idDocumento };
+      });
   }
 
   function inserirAvisoMigracao(qtd, importar, limpar) {
@@ -89,8 +96,9 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(remoto));
       localStorage.setItem(OWNER_KEY, uid);
       if (JSON.stringify(ordenar(local)) !== JSON.stringify(ordenar(remoto))) {
-        if (!sessionStorage.getItem("firebaseCurriculosRecarregados")) {
-          sessionStorage.setItem("firebaseCurriculosRecarregados", "1");
+        const chaveReload = `firebaseCurriculosRecarregados_${uid}`;
+        if (!sessionStorage.getItem(chaveReload)) {
+          sessionStorage.setItem(chaveReload, "1");
           location.reload();
           return false;
         }
@@ -153,7 +161,8 @@
       vagaId,
       titulo,
       empresa: params.get("empresa") || "",
-      area: params.get("area") || ""
+      area: params.get("area") || "",
+      modo: params.get("modo") || ""
     };
   }
 
@@ -169,9 +178,152 @@
     aviso.innerHTML = `
       <p class="small-label">VAGA SELECIONADA</p>
       <h3>${vaga.titulo}</h3>
-      <p>${vaga.empresa ? vaga.empresa + " • " : ""}Crie ou adapte um currículo e depois envie a versão escolhida para esta oportunidade.</p>
+      <p>${vaga.empresa ? vaga.empresa + " • " : ""}Você pode enviar um currículo criado no site ou um arquivo PDF que já possui.</p>
     `;
     hero.insertAdjacentElement("afterend", aviso);
+  }
+
+  function formatarTamanho(bytes) {
+    if (!Number.isFinite(Number(bytes))) return "";
+    const mb = Number(bytes) / (1024 * 1024);
+    return `${mb.toFixed(mb >= 1 ? 1 : 2)} MB`;
+  }
+
+  async function submissaoExistente(uid, vagaId) {
+    const id = `${uid}__${vagaId}`;
+    const ref = api.db.collection("submissoes").doc(id);
+    const snap = await ref.get();
+    return { id, ref, snap };
+  }
+
+  async function apagarChunks(uid, ids = []) {
+    if (!Array.isArray(ids) || !ids.length) return;
+    const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
+    const batch = api.db.batch();
+    ids.forEach((id) => batch.delete(col.doc(id)));
+    await batch.commit();
+  }
+
+  async function enviarPdfExterno(sessao, vaga, arquivo, atualizarStatus) {
+    if (!arquivo) throw new Error("Selecione um arquivo PDF.");
+    const pdfValido = arquivo.type === "application/pdf" || arquivo.name.toLowerCase().endsWith(".pdf");
+    if (!pdfValido) throw new Error("Selecione um arquivo no formato PDF.");
+    if (arquivo.size <= 0) throw new Error("O arquivo selecionado está vazio.");
+    if (arquivo.size > MAX_PDF_BYTES) throw new Error("O PDF deve ter no máximo 8 MB.");
+
+    const existente = await submissaoExistente(sessao.usuario.uid, vaga.vagaId);
+    if (existente.snap.exists) {
+      throw new Error("Você já encaminhou um currículo para esta vaga. Exclua o envio na área de Vagas antes de mandar outro.");
+    }
+
+    const bytes = new Uint8Array(await arquivo.arrayBuffer());
+    const totalPartes = Math.ceil(bytes.length / PDF_CHUNK_BYTES);
+    const col = api.db.collection("usuarios").doc(sessao.usuario.uid).collection("curriculos");
+    const loteId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const ids = [];
+    const batch = api.db.batch();
+
+    for (let indice = 0; indice < totalPartes; indice += 1) {
+      const inicio = indice * PDF_CHUNK_BYTES;
+      const fim = Math.min(bytes.length, inicio + PDF_CHUNK_BYTES);
+      const parte = bytes.slice(inicio, fim);
+      const id = `pdf_${vaga.vagaId}_${loteId}_${String(indice).padStart(3, "0")}`;
+      ids.push(id);
+      batch.set(col.doc(id), {
+        tipoDocumento: "pdf_chunk",
+        vagaId: vaga.vagaId,
+        submissaoId: existente.id,
+        arquivoNome: arquivo.name,
+        indice,
+        totalPartes,
+        conteudo: firebase.firestore.Blob.fromUint8Array(parte),
+        criadoEm: api.FieldValue.serverTimestamp()
+      });
+    }
+
+    atualizarStatus?.(`Enviando PDF (${totalPartes} parte${totalPartes === 1 ? "" : "s"})...`);
+    await batch.commit();
+
+    try {
+      await existente.ref.set({
+        alunoUid: sessao.usuario.uid,
+        alunoNome: sessao.perfil.nome,
+        vagaId: vaga.vagaId,
+        vagaTitulo: vaga.titulo,
+        empresa: vaga.empresa,
+        area: vaga.area,
+        curriculoId: "",
+        curriculoSnapshot: {
+          nome: sessao.perfil.nome,
+          tituloCurriculo: arquivo.name,
+          vagaAlvo: vaga.titulo
+        },
+        tipoCurriculo: "pdf_externo",
+        arquivoNome: arquivo.name,
+        arquivoTamanho: arquivo.size,
+        pdfChunkIds: ids,
+        atualizadoEm: api.FieldValue.serverTimestamp(),
+        status: "enviado"
+      });
+    } catch (erro) {
+      await apagarChunks(sessao.usuario.uid, ids).catch(() => {});
+      throw erro;
+    }
+  }
+
+  function adicionarImportacaoPdf(sessao, vaga) {
+    if (!vaga || document.querySelector("#pdf-externo-firebase")) return;
+    const ancora = document.querySelector("#vaga-selecionada-firebase");
+    if (!ancora) return;
+
+    const box = document.createElement("section");
+    box.id = "pdf-externo-firebase";
+    box.className = "panel";
+    box.style.marginTop = "12px";
+    box.innerHTML = `
+      <div class="section-head compact">
+        <div>
+          <p class="small-label">CURRÍCULO EXTERNO</p>
+          <h2>Enviar um currículo em PDF</h2>
+          <p>Use esta opção se você já possui um currículo pronto fora do site. O professor receberá exatamente o PDF enviado.</p>
+        </div>
+      </div>
+      <div class="form-actions" style="align-items:center; flex-wrap:wrap;">
+        <input id="pdf-externo-arquivo" type="file" accept=".pdf,application/pdf">
+        <button id="pdf-externo-enviar" class="btn btn-primary" type="button">Enviar PDF para esta vaga</button>
+      </div>
+      <p id="pdf-externo-status" style="margin:12px 0 0; color:var(--muted);">Tamanho máximo: 8 MB.</p>
+    `;
+    ancora.insertAdjacentElement("afterend", box);
+
+    const input = box.querySelector("#pdf-externo-arquivo");
+    const botao = box.querySelector("#pdf-externo-enviar");
+    const status = box.querySelector("#pdf-externo-status");
+
+    botao.addEventListener("click", async () => {
+      const arquivo = input.files?.[0];
+      botao.disabled = true;
+      botao.textContent = "Preparando envio...";
+
+      try {
+        await enviarPdfExterno(sessao, vaga, arquivo, (texto) => {
+          status.textContent = texto;
+        });
+        status.textContent = `PDF enviado com sucesso: ${arquivo.name} (${formatarTamanho(arquivo.size)}).`;
+        botao.textContent = "Enviado ✓";
+        alert("Currículo em PDF encaminhado para a vaga com sucesso.");
+        setTimeout(() => { location.href = "vagas.html"; }, 700);
+      } catch (erro) {
+        console.error("Falha ao enviar PDF:", erro);
+        status.textContent = erro.message || "Não foi possível enviar o PDF.";
+        botao.textContent = "Tentar novamente";
+        botao.disabled = false;
+      }
+    });
+
+    if (vaga.modo === "pdf") {
+      setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+    }
   }
 
   function adicionarBotoesEnvio(sessao, vaga) {
@@ -195,8 +347,12 @@
           botao.disabled = true;
           botao.textContent = "Enviando...";
           try {
-            const id = `${sessao.usuario.uid}__${vaga.vagaId}`;
-            await api.db.collection("submissoes").doc(id).set({
+            const existente = await submissaoExistente(sessao.usuario.uid, vaga.vagaId);
+            if (existente.snap.exists) {
+              throw new Error("Você já encaminhou um currículo para esta vaga. Exclua o envio na área de Vagas antes de mandar outro.");
+            }
+
+            await existente.ref.set({
               alunoUid: sessao.usuario.uid,
               alunoNome: sessao.perfil.nome,
               vagaId: vaga.vagaId,
@@ -205,17 +361,18 @@
               area: vaga.area,
               curriculoId: curriculo.id,
               curriculoSnapshot: curriculo,
+              tipoCurriculo: "site",
               atualizadoEm: api.FieldValue.serverTimestamp(),
               status: "enviado"
-            }, { merge: true });
+            });
             botao.textContent = "Enviado ✓";
             alert("Currículo enviado para a vaga com sucesso.");
+            setTimeout(() => { location.href = "vagas.html"; }, 500);
           } catch (erro) {
             console.error(erro);
             botao.textContent = "Tentar novamente";
-            alert("Não foi possível enviar o currículo. Verifique sua conexão.");
-          } finally {
             botao.disabled = false;
+            alert(erro.message || "Não foi possível enviar o currículo. Verifique sua conexão.");
           }
         });
         acoes.appendChild(botao);
@@ -240,6 +397,7 @@
     if (vaga) {
       localStorage.setItem("vagaSelecionadaFirebase", JSON.stringify(vaga));
       mostrarVagaSelecionada(vaga);
+      adicionarImportacaoPdf(sessao, vaga);
       adicionarBotoesEnvio(sessao, vaga);
     }
   }
