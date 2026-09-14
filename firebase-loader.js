@@ -50,11 +50,16 @@
         "professor.html": "professor.js"
       };
 
+      const versoes = {
+        "login.html": "20260905-1",
+        "curriculos.html": "20260914-1",
+        "vagas.html": "20260914-1",
+        "entrevistas.html": "20260911-6",
+        "professor.html": "20260911-6"
+      };
+
       if (scripts[pagina]) {
-        const versao = ["vagas.html", "entrevistas.html", "professor.html"].includes(pagina)
-          ? "20260911-6"
-          : "20260905-1";
-        await carregar(local(`${scripts[pagina]}?v=${versao}`));
+        await carregar(local(`${scripts[pagina]}?v=${versoes[pagina] || "20260905-1"}`));
       }
     } catch (erro) {
       console.error("Firebase não pôde ser iniciado:", erro);
