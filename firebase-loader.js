@@ -52,10 +52,10 @@
 
       const versoes = {
         "login.html": "20260905-1",
-        "curriculos.html": "20260914-1",
-        "vagas.html": "20260914-1",
+        "curriculos.html": "20260914-2",
+        "vagas.html": "20260914-2",
         "entrevistas.html": "20260911-6",
-        "professor.html": "20260911-6"
+        "professor.html": "20260914-2"
       };
 
       if (scripts[pagina]) {
