@@ -247,10 +247,29 @@
   }
 
   async function submissaoExistente(uid, vagaId) {
-    const id = `${uid}__${vagaId}`;
-    const ref = api.db.collection("submissoes").doc(id);
-    const snap = await ref.get();
-    return { id, ref, snap };
+    const col = api.db.collection("submissoes");
+
+    // Não fazemos GET direto no documento determinístico quando ele ainda não existe.
+    // As regras do Firestore autorizam a leitura pelos dados do próprio documento;
+    // por isso, um GET em documento inexistente pode retornar permission-denied.
+    // A consulta abaixo é compatível com a regra do aluno e funciona também no primeiro envio.
+    const snap = await col
+      .where("alunoUid", "==", uid)
+      .get();
+
+    const encontrado = snap.docs.find((doc) => {
+      const dados = doc.data() || {};
+      return dados.tipoDocumento !== "pdf_chunk" && dados.vagaId === vagaId;
+    }) || null;
+
+    const id = encontrado?.id || `${uid}__${vagaId}`;
+    const ref = encontrado?.ref || col.doc(id);
+
+    return {
+      id,
+      ref,
+      snap: encontrado || { exists: false }
+    };
   }
 
   async function apagarChunks(uid, ids = [], armazenamento = "submissoes") {
@@ -393,6 +412,7 @@
       botao.textContent = "Preparando envio...";
 
       try {
+        status.textContent = "Verificando se já existe um envio para esta vaga...";
         await enviarPdfExterno(sessao, vaga, arquivo, (texto) => {
           status.textContent = texto;
         });
