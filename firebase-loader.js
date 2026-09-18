@@ -52,7 +52,7 @@
 
       const versoes = {
         "login.html": "20260905-1",
-        "curriculos.html": "20260918-1",
+        "curriculos.html": "20260918-2",
         "vagas.html": "20260918-1",
         "entrevistas.html": "20260918-1",
         "professor.html": "20260918-1"
