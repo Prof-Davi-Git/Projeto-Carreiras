@@ -218,7 +218,9 @@
     const alvo = document.querySelector("#entrevistas-dinamicas");
     if (!alvo) return;
 
-    const envios = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const envios = submissoesSnap.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item) => item.tipoDocumento !== "pdf_chunk");
     const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     if (!avaliacoes.length) return;
 
