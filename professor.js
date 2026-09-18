@@ -271,7 +271,9 @@
       api.db.collection("avaliacoes").get()
     ]);
 
-    const submissoes = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const submissoes = submissoesSnap.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item) => item.tipoDocumento !== "pdf_chunk");
     const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const avaliacoesPorId = new Map(avaliacoes.map((avaliacao) => [avaliacao.id, avaliacao]));
     const idsUsados = new Set();
@@ -343,7 +345,9 @@
       ]);
 
       const usuarios = usuariosSnap.docs.map((doc) => ({ uid: doc.id, ...doc.data() }));
-      const submissoes = submissoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const submissoes = submissoesSnap.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((item) => item.tipoDocumento !== "pdf_chunk");
       const avaliacoes = avaliacoesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       const resultados = [];
 
