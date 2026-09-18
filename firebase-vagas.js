@@ -154,11 +154,21 @@
     const ids = Array.isArray(submissao?.pdfChunkIds) ? submissao.pdfChunkIds : [];
     if (!ids.length) return;
 
-    const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
+    const armazenamento = submissao?.pdfArmazenamento || "usuarios_curriculos";
+    const col = armazenamento === "submissoes"
+      ? api.db.collection("submissoes")
+      : api.db.collection("usuarios").doc(uid).collection("curriculos");
+
     for (let inicio = 0; inicio < ids.length; inicio += 20) {
       const batch = api.db.batch();
       ids.slice(inicio, inicio + 20).forEach((id) => batch.delete(col.doc(id)));
-      await batch.commit();
+      try {
+        await batch.commit();
+      } catch (erro) {
+        if (armazenamento === "submissoes") throw erro;
+        console.warn("Não foi possível remover partes antigas do PDF; o envio principal será removido mesmo assim.", erro);
+        break;
+      }
     }
   }
 
@@ -186,6 +196,7 @@
     const submissoesPorVaga = new Map();
     submissoesSnap.docs.forEach((doc) => {
       const dados = { id: doc.id, ...doc.data() };
+      if (dados.tipoDocumento === "pdf_chunk") return;
       if (dados.vagaId) submissoesPorVaga.set(dados.vagaId, dados);
     });
 
