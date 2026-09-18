@@ -253,9 +253,20 @@
     return { id, ref, snap };
   }
 
-  async function apagarChunks(uid, ids = []) {
+  async function apagarChunks(uid, ids = [], armazenamento = "submissoes") {
     if (!Array.isArray(ids) || !ids.length) return;
-    const col = api.db.collection("usuarios").doc(uid).collection("curriculos");
+
+    if (armazenamento === "usuarios_curriculos") {
+      const colLegada = api.db.collection("usuarios").doc(uid).collection("curriculos");
+      for (let inicio = 0; inicio < ids.length; inicio += 20) {
+        const batch = api.db.batch();
+        ids.slice(inicio, inicio + 20).forEach((id) => batch.delete(colLegada.doc(id)));
+        await batch.commit();
+      }
+      return;
+    }
+
+    const col = api.db.collection("submissoes");
     for (let inicio = 0; inicio < ids.length; inicio += 20) {
       const batch = api.db.batch();
       ids.slice(inicio, inicio + 20).forEach((id) => batch.delete(col.doc(id)));
@@ -263,7 +274,8 @@
     }
   }
 
-  async function salvarChunks(col, chunks) {
+  async function salvarChunks(chunks) {
+    const col = api.db.collection("submissoes");
     for (let inicio = 0; inicio < chunks.length; inicio += PDF_CHUNKS_POR_LOTE) {
       const batch = api.db.batch();
       chunks.slice(inicio, inicio + PDF_CHUNKS_POR_LOTE).forEach(({ id, dados }) => {
@@ -287,7 +299,6 @@
 
     const bytes = new Uint8Array(await arquivo.arrayBuffer());
     const totalPartes = Math.ceil(bytes.length / PDF_CHUNK_BYTES);
-    const col = api.db.collection("usuarios").doc(sessao.usuario.uid).collection("curriculos");
     const loteId = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     const ids = [];
     const chunks = [];
@@ -296,12 +307,15 @@
       const inicio = indice * PDF_CHUNK_BYTES;
       const fim = Math.min(bytes.length, inicio + PDF_CHUNK_BYTES);
       const parte = bytes.slice(inicio, fim);
-      const id = `pdf_${vaga.vagaId}_${loteId}_${String(indice).padStart(3, "0")}`;
+      const id = `pdfchunk__${sessao.usuario.uid}__${vaga.vagaId}__${loteId}__${String(indice).padStart(3, "0")}`;
       ids.push(id);
       chunks.push({
         id,
         dados: {
           tipoDocumento: "pdf_chunk",
+          tipoCurriculo: "pdf_chunk",
+          alunoUid: sessao.usuario.uid,
+          alunoNome: sessao.perfil.nome,
           vagaId: vaga.vagaId,
           submissaoId: existente.id,
           arquivoNome: arquivo.name,
@@ -314,9 +328,9 @@
     }
 
     atualizarStatus?.(`Enviando PDF (${totalPartes} parte${totalPartes === 1 ? "" : "s"})...`);
-    await salvarChunks(col, chunks);
 
     try {
+      await salvarChunks(chunks);
       await existente.ref.set({
         alunoUid: sessao.usuario.uid,
         alunoNome: sessao.perfil.nome,
@@ -334,6 +348,7 @@
         arquivoNome: arquivo.name,
         arquivoTamanho: arquivo.size,
         pdfChunkIds: ids,
+        pdfArmazenamento: "submissoes",
         atualizadoEm: api.FieldValue.serverTimestamp(),
         status: "enviado"
       });
