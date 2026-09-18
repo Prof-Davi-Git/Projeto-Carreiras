@@ -40,7 +40,10 @@
     botao.textContent = "Abrindo PDF...";
 
     try {
-      const col = api.db.collection("usuarios").doc(submissao.alunoUid).collection("curriculos");
+      const armazenamento = submissao.pdfArmazenamento || "usuarios_curriculos";
+      const col = armazenamento === "submissoes"
+        ? api.db.collection("submissoes")
+        : api.db.collection("usuarios").doc(submissao.alunoUid).collection("curriculos");
       const snaps = await Promise.all(ids.map((id) => col.doc(id).get()));
       const partes = snaps
         .filter((snap) => snap.exists)
