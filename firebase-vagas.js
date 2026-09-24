@@ -4,7 +4,7 @@
 
   const VAGA_EM_ANDAMENTO = "assistente-de-suporte-de-ti";
   const AGENDA_VAGAS = {
-    "assistente-de-suporte-de-ti": ["2026-09-04", "2026-09-11", "2026-09-14", "2026-09-17"]
+    "assistente-de-suporte-de-ti": ["2026-09-04", "2026-09-11", "2026-09-14", "2026-09-17", "2026-09-21", "2026-09-24"]
   };
 
   function garantirEstiloVagas() {
