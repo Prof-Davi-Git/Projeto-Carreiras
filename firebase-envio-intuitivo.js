@@ -74,7 +74,10 @@
     if (!vagaId) return;
     const box = document.querySelector("#pdf-externo-firebase");
     if (!box) return;
-    box.classList.toggle("envio-vaga-oculto", !modoPdf);
+    const deveOcultar = !modoPdf;
+    if (box.classList.contains("envio-vaga-oculto") !== deveOcultar) {
+      box.classList.toggle("envio-vaga-oculto", deveOcultar);
+    }
   }
 
   function ajustarCriacao() {
@@ -98,10 +101,12 @@
     if (!form) return;
 
     const salvar = form.querySelector('button[type="submit"]');
-    if (salvar) salvar.textContent = "Salvar currículo e continuar para o envio";
+    const textoSalvar = "Salvar currículo e continuar para o envio";
+    if (salvar && salvar.textContent !== textoSalvar) salvar.textContent = textoSalvar;
 
     const visualizar = document.querySelector("#salvar-visualizar");
-    if (visualizar) visualizar.textContent = "Salvar e visualizar antes de enviar";
+    const textoVisualizar = "Salvar e visualizar antes de enviar";
+    if (visualizar && visualizar.textContent !== textoVisualizar) visualizar.textContent = textoVisualizar;
 
     if (form.dataset.envioUx === "ok") return;
     form.dataset.envioUx = "ok";
@@ -139,8 +144,9 @@
       const botao = card.querySelector(".firebase-enviar-vaga");
       if (!botao) return;
 
-      botao.textContent = "ENVIAR ESTE CURRÍCULO PARA O PROFESSOR";
-      botao.classList.add("envio-professor-btn");
+      const textoBotao = "ENVIAR ESTE CURRÍCULO PARA O PROFESSOR";
+      if (botao.textContent !== textoBotao) botao.textContent = textoBotao;
+      if (!botao.classList.contains("envio-professor-btn")) botao.classList.add("envio-professor-btn");
 
       const acoes = card.querySelector(".saved-actions");
       if (acoes && acoes.firstElementChild !== botao) acoes.prepend(botao);
@@ -171,23 +177,30 @@
     const pdf = links.find((item) => item.textContent.includes("PDF"));
     const encaminhado = links.find((item) => item.textContent.includes("Currículo encaminhado"));
 
-    if (principal) principal.textContent = "Criar ou escolher currículo para enviar";
-    if (pdf) pdf.textContent = "Já tenho um currículo pronto em PDF";
+    const textoPrincipal = "Criar ou escolher currículo para enviar";
+    if (principal && principal.textContent !== textoPrincipal) principal.textContent = textoPrincipal;
 
-    if (!card.querySelector(".vaga-envio-ajuda")) {
-      const ajuda = el("div", "vaga-envio-ajuda");
-      ajuda.append(
-        el("strong", "", encaminhado ? "Currículo recebido pelo professor ✓" : "Como enviar para o professor"),
-        el("span", "", encaminhado
-          ? "Seu envio foi concluído. Agora é só aguardar a avaliação da entrevista."
-          : "Crie ou escolha seu currículo e finalize no botão ENVIAR ESTE CURRÍCULO PARA O PROFESSOR.")
-      );
+    const textoPdf = "Já tenho um currículo pronto em PDF";
+    if (pdf && pdf.textContent !== textoPdf) pdf.textContent = textoPdf;
+
+    let ajuda = card.querySelector(".vaga-envio-ajuda");
+    if (!ajuda) {
+      ajuda = el("div", "vaga-envio-ajuda");
+      ajuda.append(el("strong"), el("span"));
       (area || card.lastElementChild)?.insertAdjacentElement("beforebegin", ajuda);
-    } else if (encaminhado) {
-      const ajuda = card.querySelector(".vaga-envio-ajuda");
-      ajuda.querySelector("strong").textContent = "Currículo recebido pelo professor ✓";
-      ajuda.querySelector("span").textContent = "Seu envio foi concluído. Agora é só aguardar a avaliação da entrevista.";
-      ajuda.classList.add("vaga-envio-recebido");
+    }
+
+    const forte = ajuda.querySelector("strong");
+    const detalhe = ajuda.querySelector("span");
+    const tituloAjuda = encaminhado ? "Currículo recebido pelo professor ✓" : "Como enviar para o professor";
+    const textoAjuda = encaminhado
+      ? "Seu envio foi concluído. Agora é só aguardar a avaliação da entrevista."
+      : "Crie ou escolha seu currículo e finalize no botão ENVIAR ESTE CURRÍCULO PARA O PROFESSOR.";
+
+    if (forte && forte.textContent !== tituloAjuda) forte.textContent = tituloAjuda;
+    if (detalhe && detalhe.textContent !== textoAjuda) detalhe.textContent = textoAjuda;
+    if (ajuda.classList.contains("vaga-envio-recebido") !== Boolean(encaminhado)) {
+      ajuda.classList.toggle("vaga-envio-recebido", Boolean(encaminhado));
     }
   }
 
