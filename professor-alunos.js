@@ -17,7 +17,8 @@
 
   let sessao = null;
   let usuarios = [];
-  let submissoes = [];
+  let vagasProfessor = [];
+  let submissoesProfessor = [];
   let alunosRenderizados = [];
 
   function normalizar(valor) {
@@ -28,13 +29,6 @@
       .trim();
   }
 
-  function ehVagaRemovida(item) {
-    const texto = normalizar(item?.vagaTitulo || item?.vagaId || "");
-    return texto.includes("desenvolvedor(a) front-end junior")
-      || texto.includes("desenvolvedor front-end junior")
-      || texto === "desenvolvedor-a-front-end-junior";
-  }
-
   function mostrarStatus(texto, erro = false) {
     if (!status) return;
     status.textContent = texto || "";
@@ -42,12 +36,12 @@
     status.hidden = !texto;
   }
 
-  function turmaDoAluno(aluno) {
-    return aluno?.turmaId || turmaPadrao?.turmaId || "";
-  }
-
   function escolaDoAluno(aluno) {
     return aluno?.escolaId || turmaPadrao?.escolaId || "";
+  }
+
+  function turmaDoAluno(aluno) {
+    return aluno?.turmaId || turmaPadrao?.turmaId || "";
   }
 
   function preencherEscolas() {
@@ -94,7 +88,6 @@
     let data = null;
     if (valor?.toDate) data = valor.toDate();
     else if (typeof valor === "string") data = new Date(valor);
-    else if (valor instanceof Date) data = valor;
     if (!data || Number.isNaN(data.getTime())) return "";
     return data.toLocaleDateString("pt-BR");
   }
@@ -120,7 +113,9 @@
       if (mostrar) visiveis += 1;
     });
     const contas = alunosRenderizados.filter((item) => item.perfil).length;
-    if (resumo) resumo.textContent = `${visiveis} aluno${visiveis === 1 ? "" : "s"} na turma • ${contas} conta${contas === 1 ? "" : "s"} online criada${contas === 1 ? "" : "s"}`;
+    if (resumo) {
+      resumo.textContent = `${visiveis} aluno${visiveis === 1 ? "" : "s"} na turma • ${contas} conta${contas === 1 ? "" : "s"} online criada${contas === 1 ? "" : "s"}`;
+    }
   }
 
   function limparNomeArquivo(nome) {
@@ -137,7 +132,7 @@
       return;
     }
 
-    const texto = botao.textContent;
+    const anterior = botao.textContent;
     botao.disabled = true;
     botao.textContent = "Preparando PDF...";
 
@@ -154,9 +149,7 @@
         .sort((a, b) => Number(a.indice || 0) - Number(b.indice || 0))
         .map((dados) => dados.conteudo.toUint8Array());
 
-      if (!partes.length || partes.length !== ids.length) {
-        throw new Error("O PDF está incompleto no armazenamento.");
-      }
+      if (!partes.length || partes.length !== ids.length) throw new Error("O PDF está incompleto no armazenamento.");
 
       const blob = new Blob(partes, { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
@@ -172,7 +165,7 @@
       alert(erro.message || "Não foi possível baixar o PDF enviado pelo aluno.");
     } finally {
       botao.disabled = false;
-      botao.textContent = texto;
+      botao.textContent = anterior;
     }
   }
 
@@ -193,36 +186,15 @@
   }
 
   function curriculoHtml(curriculo) {
-    const layout = ["moderno", "compacto", "classico"].includes(curriculo.layout) ? curriculo.layout : "classico";
-    const cores = {
-      azul: "#155eef", verde: "#18794e", vinho: "#8a244b", grafite: "#344054",
-      roxo: "#7c3aed", marinho: "#1f4e8c", petroleo: "#0f766e", terracota: "#b85c38",
-      dourado: "#a47a1f", "rosa-seco": "#a85576"
-    };
-    const cor = layout === "classico" ? "#111827" : (cores[curriculo.tema] || cores.azul);
     const contato = [curriculo.email, curriculo.telefone, curriculo.cidade].filter(Boolean).map(escapar).join(" • ");
     const links = [curriculo.linkedin, curriculo.github].filter(Boolean).map(escapar).join(" • ");
-    const foto = curriculo.foto ? `<img class="foto" src="${escapar(curriculo.foto)}" alt="Foto">` : "";
-
-    return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${escapar(curriculo.tituloCurriculo || "Currículo")}</title><style>
-      @page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#202939;background:#eef2f6}main{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:16mm}header{display:flex;gap:18px;align-items:center;border-bottom:3px solid ${cor};padding-bottom:15px;margin-bottom:18px}.foto{width:92px;height:92px;object-fit:cover;border-radius:${layout === "classico" ? "4px" : "50%"};border:3px solid ${cor}}h1{margin:0;color:${cor};font-size:28px}header p{margin:5px 0;color:#667085}h2{margin:18px 0 7px;color:${cor};font-size:15px;text-transform:uppercase;letter-spacing:.06em}p,li{font-size:12px;line-height:1.55}ul{margin:6px 0;padding-left:18px}.objetivo{padding:10px 12px;background:#f7f9fc;border-left:4px solid ${cor}}.compacto main,main.compacto{padding:12mm}.toolbar{position:fixed;top:14px;right:14px;background:#fff;border:1px solid #d0d5dd;border-radius:10px;padding:10px 12px;font-size:12px;box-shadow:0 4px 20px #0002}@media print{body{background:#fff}.toolbar{display:none}main{margin:0;width:auto;min-height:auto;padding:0}}
-    </style></head><body><div class="toolbar">Na janela de impressão, escolha <strong>Salvar como PDF</strong>.</div><main class="${layout}"><header>${foto}<div><h1>${escapar(curriculo.nome || "Currículo")}</h1><p>${contato}</p><p>${links}</p></div></header>
-      ${curriculo.objetivo ? `<section><h2>Objetivo</h2><p class="objetivo">${escapar(curriculo.objetivo)}</p></section>` : ""}
-      ${curriculo.resumo ? `<section><h2>Resumo profissional</h2><p>${escapar(curriculo.resumo)}</p></section>` : ""}
-      ${listaHtml("Formação", curriculo.formacoes, (i) => escapar([i.curso, i.instituicao, i.periodo].filter(Boolean).join(" — ")))}
-      ${listaHtml("Experiências", curriculo.experiencias, (i) => escapar([i.cargo, i.empresa, i.periodo, i.descricao].filter(Boolean).join(" — ")))}
-      ${listaHtml("Cursos", curriculo.cursos, (i) => escapar([i.nome, i.instituicao, i.ano].filter(Boolean).join(" — ")))}
-      ${listaHtml("Habilidades", curriculo.habilidades, (i) => escapar(i.valor || ""))}
-      ${listaHtml("Competências", curriculo.competencias, (i) => escapar(i.valor || ""))}
-      ${listaHtml("Idiomas", curriculo.idiomas, (i) => escapar([i.idioma, i.nivel].filter(Boolean).join(" — ")))}
-      ${listaHtml("Projetos", curriculo.projetos, (i) => escapar([i.nome, i.descricao].filter(Boolean).join(" — ")))}
-    </main><script>setTimeout(()=>window.print(),450)<\/script></body></html>`;
+    return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escapar(curriculo.tituloCurriculo || "Currículo")}</title><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#202939;margin:0}main{max-width:185mm;margin:auto}header{border-bottom:3px solid #155eef;padding-bottom:14px;margin-bottom:18px}h1{margin:0;color:#155eef;font-size:28px}header p{margin:5px 0;color:#667085}h2{margin:18px 0 7px;color:#155eef;font-size:15px;text-transform:uppercase}p,li{font-size:12px;line-height:1.55}ul{padding-left:18px}.toolbar{position:fixed;right:12px;top:12px;background:#fff;border:1px solid #ddd;padding:10px;border-radius:8px}@media print{.toolbar{display:none}}</style></head><body><div class="toolbar">Escolha <strong>Salvar como PDF</strong>.</div><main><header><h1>${escapar(curriculo.nome || "Currículo")}</h1><p>${contato}</p><p>${links}</p></header>${curriculo.objetivo ? `<section><h2>Objetivo</h2><p>${escapar(curriculo.objetivo)}</p></section>` : ""}${curriculo.resumo ? `<section><h2>Resumo profissional</h2><p>${escapar(curriculo.resumo)}</p></section>` : ""}${listaHtml("Formação", curriculo.formacoes, (i) => escapar([i.curso, i.instituicao, i.periodo].filter(Boolean).join(" — ")))}${listaHtml("Experiências", curriculo.experiencias, (i) => escapar([i.cargo, i.empresa, i.periodo, i.descricao].filter(Boolean).join(" — ")))}${listaHtml("Cursos", curriculo.cursos, (i) => escapar([i.nome, i.instituicao, i.ano].filter(Boolean).join(" — ")))}${listaHtml("Habilidades", curriculo.habilidades, (i) => escapar(i.valor || ""))}${listaHtml("Competências", curriculo.competencias, (i) => escapar(i.valor || ""))}${listaHtml("Idiomas", curriculo.idiomas, (i) => escapar([i.idioma, i.nivel].filter(Boolean).join(" — ")))}${listaHtml("Projetos", curriculo.projetos, (i) => escapar([i.nome, i.descricao].filter(Boolean).join(" — ")))}</main><script>setTimeout(()=>window.print(),400)<\/script></body></html>`;
   }
 
   function gerarPdfCurriculo(curriculo) {
     const popup = window.open("", "_blank");
     if (!popup) {
-      alert("O navegador bloqueou a janela do currículo. Autorize pop-ups para este site e tente novamente.");
+      alert("O navegador bloqueou a janela do currículo. Autorize pop-ups e tente novamente.");
       return;
     }
     popup.document.open();
@@ -249,12 +221,10 @@
       info.appendChild(p);
     }
 
-    const vagaTexto = Array.from(new Set((vagas || []).filter(Boolean)));
+    const vagasUnicas = Array.from(new Set((vagas || []).filter(Boolean)));
     const pVaga = document.createElement("p");
     pVaga.className = "professor-curriculo-vaga";
-    pVaga.textContent = vagaTexto.length
-      ? `Enviado para: ${vagaTexto.join(" • ")}`
-      : "Ainda não enviado para nenhuma vaga.";
+    pVaga.textContent = vagasUnicas.length ? `Enviado para: ${vagasUnicas.join(" • ")}` : "Sem vínculo com uma vaga sua.";
     info.appendChild(pVaga);
 
     const acoes = document.createElement("div");
@@ -264,84 +234,46 @@
     baixar.className = "btn btn-primary";
     baixar.textContent = tipo === "pdf" ? "Baixar PDF enviado" : "Gerar / salvar PDF";
     if (tipo === "pdf") baixar.addEventListener("click", () => baixarPdfExterno(submissao, baixar));
-    else baixar.addEventListener("click", () => gerarPdfCurriculo(dados));
+    else baixar.addEventListener("click", () => gerarPdfCurriculo(dados || {}));
     acoes.appendChild(baixar);
 
     item.append(info, acoes);
     return item;
   }
 
-  async function carregarCurriculosAluno(alunoInfo, detalhes, botao) {
-    if (detalhes.dataset.carregado === "true") return;
-    detalhes.innerHTML = '<p class="professor-curriculos-loading">Carregando currículos deste aluno...</p>';
+  function curriculosDoAluno(perfil) {
+    if (!perfil?.uid) return [];
+    const envios = submissoesProfessor.filter((item) => item.alunoUid === perfil.uid && item.tipoDocumento !== "pdf_chunk");
+    const resultado = [];
+    const sites = new Map();
 
-    const perfil = alunoInfo.perfil;
-    if (!perfil?.uid) {
-      detalhes.innerHTML = '<p class="professor-curriculos-vazio">Este aluno ainda não criou a conta online; por isso não há currículos vinculados na nuvem.</p>';
-      detalhes.dataset.carregado = "true";
-      return;
-    }
-
-    try {
-      const snap = await api.db.collection("usuarios").doc(perfil.uid).collection("curriculos").get();
-      const salvos = snap.docs
-        .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
-        .filter((item) => item.tipoDocumento !== "pdf_chunk");
-      const envios = submissoes.filter((item) => item.alunoUid === perfil.uid && !ehVagaRemovida(item));
-      const listaCurriculos = document.createElement("div");
-      listaCurriculos.className = "professor-curriculos-lista";
-
-      const idsSalvos = new Set();
-      salvos
-        .sort((a, b) => String(b.atualizadoEm || "").localeCompare(String(a.atualizadoEm || "")))
-        .forEach((curriculo) => {
-          idsSalvos.add(String(curriculo.id || curriculo.idDocumento || curriculo.id || ""));
-          const relacionados = envios.filter((envio) => String(envio.curriculoId || "") === String(curriculo.id || curriculo.idDocumento || ""));
-          listaCurriculos.appendChild(criarLinhaCurriculo({
-            tipo: "site",
-            titulo: curriculo.tituloCurriculo || curriculo.nome || "Currículo criado no site",
-            detalhe: [curriculo.vagaAlvo ? `Objetivo: ${curriculo.vagaAlvo}` : "", formatarData(curriculo.atualizadoEm) ? `Atualizado em ${formatarData(curriculo.atualizadoEm)}` : ""].filter(Boolean).join(" • "),
-            vagas: relacionados.map((item) => item.vagaTitulo || item.vagaId),
-            dados: curriculo
-          }));
+    envios.filter((item) => item.tipoCurriculo !== "pdf_externo").forEach((envio) => {
+      const chave = String(envio.curriculoId || envio.id);
+      if (!sites.has(chave)) {
+        sites.set(chave, {
+          tipo: "site",
+          titulo: envio.curriculoSnapshot?.tituloCurriculo || "Currículo criado na plataforma",
+          detalhe: formatarData(envio.atualizadoEm) ? `Enviado em ${formatarData(envio.atualizadoEm)}` : "Versão enviada pela plataforma",
+          vagas: [],
+          dados: envio.curriculoSnapshot || {}
         });
-
-      envios.filter((item) => item.tipoCurriculo === "pdf_externo").forEach((envio) => {
-        listaCurriculos.appendChild(criarLinhaCurriculo({
-          tipo: "pdf",
-          titulo: envio.arquivoNome || "Currículo externo.pdf",
-          detalhe: formatarData(envio.atualizadoEm) ? `Enviado em ${formatarData(envio.atualizadoEm)}` : "Arquivo enviado pelo aluno",
-          vagas: [envio.vagaTitulo || envio.vagaId],
-          submissao: envio
-        }));
-      });
-
-      envios
-        .filter((item) => item.tipoCurriculo !== "pdf_externo" && item.curriculoSnapshot)
-        .filter((item) => !salvos.some((c) => String(c.id || "") === String(item.curriculoId || "")))
-        .forEach((envio) => {
-          listaCurriculos.appendChild(criarLinhaCurriculo({
-            tipo: "site",
-            titulo: envio.curriculoSnapshot.tituloCurriculo || "Currículo enviado pelo site",
-            detalhe: "Versão preservada no envio da vaga",
-            vagas: [envio.vagaTitulo || envio.vagaId],
-            dados: envio.curriculoSnapshot
-          }));
-        });
-
-      detalhes.replaceChildren();
-      if (!listaCurriculos.children.length) {
-        detalhes.innerHTML = '<p class="professor-curriculos-vazio">Nenhum currículo foi encontrado para este aluno.</p>';
-      } else {
-        detalhes.appendChild(listaCurriculos);
       }
-      detalhes.dataset.carregado = "true";
-    } catch (erro) {
-      console.error("Falha ao carregar currículos do aluno:", erro);
-      detalhes.innerHTML = '<p class="professor-curriculos-vazio">Não foi possível carregar os currículos deste aluno.</p>';
-      detalhes.dataset.carregado = "false";
-      botao.textContent = "Tentar novamente";
-    }
+      sites.get(chave).vagas.push(envio.vagaTitulo || envio.vagaId);
+    });
+
+    sites.forEach((item) => resultado.push(item));
+
+    envios.filter((item) => item.tipoCurriculo === "pdf_externo").forEach((envio) => {
+      resultado.push({
+        tipo: "pdf",
+        titulo: envio.arquivoNome || "Currículo externo.pdf",
+        detalhe: formatarData(envio.atualizadoEm) ? `Enviado em ${formatarData(envio.atualizadoEm)}` : "PDF enviado pelo aluno",
+        vagas: [envio.vagaTitulo || envio.vagaId],
+        submissao: envio
+      });
+    });
+
+    return resultado;
   }
 
   function criarCardAluno(alunoInfo) {
@@ -373,31 +305,34 @@
     credenciais.append(
       criarCredencial("Nome de acesso", aluno.nome),
       criarCredencial("Identificador interno", emailInterno(indice)),
-      criarCredencial("Senha", "6 últimos do RA + dígito", "A senha real não é armazenada em texto no sistema; somente o hash de validação é guardado.")
+      criarCredencial("Senha", "6 últimos do RA + dígito", "A senha real não é armazenada em texto; somente o hash de validação é guardado.")
     );
 
+    const vinculados = curriculosDoAluno(perfil);
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "btn btn-secondary professor-aluno-toggle";
-    const enviosQtd = perfil ? submissoes.filter((item) => item.alunoUid === perfil.uid && !ehVagaRemovida(item)).length : 0;
-    toggle.textContent = enviosQtd ? `Currículos / envios (${enviosQtd})` : "Ver currículos";
+    toggle.textContent = vinculados.length ? `Currículos vinculados (${vinculados.length})` : "Sem currículos vinculados";
+    toggle.disabled = vinculados.length === 0;
     toggle.setAttribute("aria-expanded", "false");
 
     const detalhes = document.createElement("div");
     detalhes.className = "professor-aluno-detalhes";
     detalhes.hidden = true;
 
-    toggle.addEventListener("click", async () => {
-      const abrir = detalhes.hidden;
-      detalhes.hidden = !abrir;
-      toggle.setAttribute("aria-expanded", String(abrir));
-      if (abrir) {
-        toggle.textContent = "Ocultar currículos";
-        await carregarCurriculosAluno(alunoInfo, detalhes, toggle);
-      } else {
-        toggle.textContent = enviosQtd ? `Currículos / envios (${enviosQtd})` : "Ver currículos";
-      }
-    });
+    if (vinculados.length) {
+      const listaCurriculos = document.createElement("div");
+      listaCurriculos.className = "professor-curriculos-lista";
+      vinculados.forEach((item) => listaCurriculos.appendChild(criarLinhaCurriculo(item)));
+      detalhes.appendChild(listaCurriculos);
+
+      toggle.addEventListener("click", () => {
+        const abrir = detalhes.hidden;
+        detalhes.hidden = !abrir;
+        toggle.setAttribute("aria-expanded", String(abrir));
+        toggle.textContent = abrir ? "Ocultar currículos" : `Currículos vinculados (${vinculados.length})`;
+      });
+    }
 
     head.append(identidade, credenciais, toggle);
     card.append(head, detalhes);
@@ -423,19 +358,38 @@
       vazio.innerHTML = "<h2>Nenhum aluno cadastrado nesta turma.</h2><p>Quando os alunos forem vinculados à turma, eles aparecerão aqui.</p>";
       lista.appendChild(vazio);
     }
+
     aplicarBusca();
   }
 
+  async function consultarSubmissoesDasVagas() {
+    if (!vagasProfessor.length) return [];
+    const resultados = [];
+    for (const vaga of vagasProfessor) {
+      try {
+        const snap = await api.db.collection("submissoes").where("vagaId", "==", vaga.id).get();
+        snap.docs.forEach((doc) => resultados.push({ id: doc.id, ...doc.data() }));
+      } catch (erro) {
+        console.warn(`Não foi possível consultar os envios da vaga ${vaga.id}.`, erro);
+      }
+    }
+    return resultados;
+  }
+
   async function carregarBase() {
-    mostrarStatus("Carregando alunos e vínculos de currículo...");
-    const [usuariosSnap, submissoesSnap] = await Promise.all([
+    mostrarStatus("Carregando alunos e vínculos deste professor...");
+    const [usuariosSnap, vagasSnap] = await Promise.all([
       api.db.collection("usuarios").get(),
-      api.db.collection("submissoes").get()
+      api.db.collection("vagas").where("professorUid", "==", sessao.usuario.uid).get()
     ]);
+
     usuarios = usuariosSnap.docs.map((doc) => ({ uid: doc.id, ...(doc.data() || {}) }));
-    submissoes = submissoesSnap.docs
+    vagasProfessor = vagasSnap.docs
       .map((doc) => ({ id: doc.id, ...(doc.data() || {}) }))
-      .filter((item) => item.tipoDocumento !== "pdf_chunk" && !ehVagaRemovida(item));
+      .filter((vaga) => vaga.ativo !== false);
+    submissoesProfessor = (await consultarSubmissoesDasVagas())
+      .filter((item) => item.tipoDocumento !== "pdf_chunk");
+
     mostrarStatus("");
     renderizar();
   }
