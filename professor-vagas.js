@@ -290,38 +290,45 @@
     });
   }
 
-  async function garantirVagasBase() {
-    if (!sessaoAtual) return;
+  async function listarVagasDoProfessor() {
+    const snap = await api.db.collection("vagas")
+      .where("professorUid", "==", sessaoAtual.usuario.uid)
+      .get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  }
+
+  async function garantirVagasBase(idsExistentes) {
+    if (!sessaoAtual) return false;
+    let criou = false;
 
     for (const vaga of vagasBase) {
-      const ref = api.db.collection("vagas").doc(vaga.id);
-      try {
-        const snap = await ref.get();
-        if (snap.exists) continue;
+      if (idsExistentes.has(vaga.id)) continue;
 
-        await ref.set({
+      try {
+        await api.db.collection("vagas").doc(vaga.id).set({
           ...vaga,
           professorUid: sessaoAtual.usuario.uid,
           professorNome: sessaoAtual.perfil.nome || "Professor",
           criadoEm: api.FieldValue.serverTimestamp(),
           atualizadoEm: api.FieldValue.serverTimestamp()
         });
+        criou = true;
       } catch (erro) {
         console.warn(`Não foi possível inicializar a vaga base ${vaga.id}.`, erro);
       }
     }
+
+    return criou;
   }
 
   async function carregar() {
     if (!sessaoAtual) return;
 
     try {
-      await garantirVagasBase();
-      const snap = await api.db.collection("vagas")
-        .where("professorUid", "==", sessaoAtual.usuario.uid)
-        .get();
-
-      vagasProfessor = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      let encontradas = await listarVagasDoProfessor();
+      const criouBase = await garantirVagasBase(new Set(encontradas.map((vaga) => vaga.id)));
+      if (criouBase) encontradas = await listarVagasDoProfessor();
+      vagasProfessor = encontradas;
       renderizar();
     } catch (erro) {
       console.error("Falha ao carregar vagas cadastradas:", erro);
