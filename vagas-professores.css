@@ -1,0 +1,26 @@
+.vaga-professor-responsavel {
+  display: grid;
+  gap: 2px;
+  margin: 10px 0 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.vaga-professor-responsavel span {
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.vaga-professor-responsavel strong {
+  color: var(--text);
+  font-size: .94rem;
+}
+
+.vaga-professor-responsavel.vaga-professor-atual {
+  border-color: #b7e4ca;
+  background: #eefaf3;
+}
