@@ -1,0 +1,162 @@
+.professor-vagas-admin {
+  margin-bottom: 22px;
+}
+
+.professor-vagas-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.professor-vagas-head h2 {
+  margin: 4px 0 4px;
+}
+
+.professor-vagas-head p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.professor-vagas-form-wrap {
+  margin: 0 0 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.professor-vagas-form-wrap[hidden] {
+  display: none !important;
+}
+
+.professor-vaga-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.professor-vaga-form-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.professor-vaga-form-grid .full {
+  grid-column: 1 / -1;
+}
+
+.professor-vaga-form-grid textarea {
+  min-height: 92px;
+}
+
+.professor-vagas-status {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.professor-vagas-status[hidden] {
+  display: none !important;
+}
+
+.professor-vagas-status.sucesso {
+  color: #12603d;
+  background: #eaf8f1;
+}
+
+.professor-vagas-status.erro {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.professor-vagas-status.aviso {
+  color: #765b00;
+  background: #fff7dc;
+}
+
+.professor-vagas-lista {
+  display: grid;
+  gap: 10px;
+}
+
+.professor-vaga-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.professor-vaga-info h3 {
+  margin: 6px 0 2px;
+  font-size: 1.02rem;
+}
+
+.professor-vaga-info p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.professor-vaga-tags {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.professor-vaga-tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #edf1f5;
+  color: #5f6b7a;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.professor-vaga-tag.atual,
+.professor-vaga-tag.nova {
+  color: #12603d;
+  background: #eaf8f1;
+}
+
+.professor-vaga-tag.proxima {
+  color: #155eef;
+  background: #edf4ff;
+}
+
+.professor-vaga-tag.turma {
+  color: #475467;
+  background: #f2f4f7;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.professor-vaga-item-acoes {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .professor-vagas-head,
+  .professor-vaga-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .professor-vaga-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .professor-vaga-form-grid .full {
+    grid-column: auto;
+  }
+}
