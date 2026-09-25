@@ -65,17 +65,70 @@
     return `aluno${numero}@alunos.meufuturoprofissional.invalid`;
   }
 
+  function vinculoDoAluno(indice) {
+    const alunos = Array.isArray(window.ALUNOS_AUTENTICACAO) ? window.ALUNOS_AUTENTICACAO : [];
+    const aluno = alunos[Number(indice)] || {};
+    const padrao = window.CARREIRAS_TURMA_PADRAO || {};
+
+    const turmaId = aluno.turmaId || padrao.turmaId || "";
+    if (!turmaId) return null;
+
+    return {
+      escolaId: aluno.escolaId || padrao.escolaId || "",
+      escolaNome: aluno.escolaNome || padrao.escolaNome || "",
+      turmaId,
+      turmaNome: aluno.turmaNome || padrao.turmaNome || ""
+    };
+  }
+
+  function enriquecerPerfilAluno(dados = {}) {
+    if (dados.role !== "aluno") return dados;
+    const vinculo = vinculoDoAluno(dados.alunoIndice);
+    if (!vinculo) return dados;
+    return {
+      ...vinculo,
+      ...dados,
+      escolaId: dados.escolaId || vinculo.escolaId,
+      escolaNome: dados.escolaNome || vinculo.escolaNome,
+      turmaId: dados.turmaId || vinculo.turmaId,
+      turmaNome: dados.turmaNome || vinculo.turmaNome
+    };
+  }
+
   async function perfilDoUsuario(usuario = auth.currentUser) {
     if (!usuario) return null;
     const snap = await db.collection("usuarios").doc(usuario.uid).get();
     if (!snap.exists) return null;
-    return { uid: usuario.uid, ...snap.data() };
+    return { uid: usuario.uid, ...enriquecerPerfilAluno(snap.data() || {}) };
+  }
+
+  async function garantirVinculoAluno(usuario, perfil) {
+    if (!usuario || perfil?.role !== "aluno") return perfil;
+    const vinculo = vinculoDoAluno(perfil.alunoIndice);
+    if (!vinculo) return perfil;
+
+    const ref = db.collection("usuarios").doc(usuario.uid);
+    try {
+      const snap = await ref.get();
+      const dados = snap.data() || {};
+      const precisaAtualizar = ["escolaId", "escolaNome", "turmaId", "turmaNome"]
+        .some((chave) => String(dados[chave] || "") !== String(vinculo[chave] || ""));
+
+      if (precisaAtualizar) {
+        await ref.set(vinculo, { merge: true });
+      }
+    } catch (erro) {
+      console.warn("O vínculo de turma ainda não pôde ser gravado no perfil do aluno.", erro);
+    }
+
+    return { ...perfil, ...vinculo };
   }
 
   async function sessaoAtual() {
     const usuario = await authPronto;
     if (!usuario) return null;
-    const perfil = await perfilDoUsuario(usuario);
+    let perfil = await perfilDoUsuario(usuario);
+    perfil = await garantirVinculoAluno(usuario, perfil);
     return { usuario, perfil };
   }
 
@@ -101,6 +154,7 @@
     if (!senhaLimpa) throw new Error("Digite sua senha.");
 
     const email = emailInternoAluno(posicao);
+    const vinculo = vinculoDoAluno(posicao) || {};
     let credencial = null;
 
     try {
@@ -132,6 +186,7 @@
         role: "aluno",
         alunoIndice: posicao,
         emailInterno: email,
+        ...vinculo,
         criadoEm: FieldValue.serverTimestamp(),
         ultimoAcessoEm: FieldValue.serverTimestamp()
       });
@@ -141,10 +196,21 @@
         await auth.signOut();
         throw new Error("Esta conta não possui perfil de aluno.");
       }
-      await ref.set({ ultimoAcessoEm: FieldValue.serverTimestamp() }, { merge: true });
+
+      try {
+        await ref.set({
+          ultimoAcessoEm: FieldValue.serverTimestamp(),
+          ...vinculo
+        }, { merge: true });
+      } catch (erro) {
+        if (erro?.code !== "permission-denied") throw erro;
+        await ref.set({ ultimoAcessoEm: FieldValue.serverTimestamp() }, { merge: true });
+      }
     }
 
-    return { usuario: credencial.user, perfil: await perfilDoUsuario(credencial.user) };
+    let perfil = await perfilDoUsuario(credencial.user);
+    perfil = await garantirVinculoAluno(credencial.user, perfil);
+    return { usuario: credencial.user, perfil };
   }
 
   async function loginProfessor(email, senha) {
@@ -180,12 +246,14 @@
       return null;
     }
 
-    const perfil = await perfilDoUsuario(usuario);
+    let perfil = await perfilDoUsuario(usuario);
     if (!perfil) {
       await auth.signOut();
       location.replace("login.html?erro=perfil");
       return null;
     }
+
+    perfil = await garantirVinculoAluno(usuario, perfil);
 
     if (role && perfil.role !== role) {
       location.replace(perfil.role === "professor" ? "professor.html" : "curriculos.html");
@@ -195,7 +263,9 @@
     localStorage.setItem("firebaseSessaoPerfil", JSON.stringify({
       uid: usuario.uid,
       nome: perfil.nome || "",
-      role: perfil.role || ""
+      role: perfil.role || "",
+      escolaId: perfil.escolaId || "",
+      turmaId: perfil.turmaId || ""
     }));
 
     return { usuario, perfil };
@@ -246,6 +316,7 @@
     exigirSessao,
     decorarTopo,
     slug,
-    emailInternoAluno
+    emailInternoAluno,
+    vinculoDoAluno
   });
 })();
