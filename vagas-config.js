@@ -3,8 +3,8 @@
     {
       escolaId: "ee-professor-armando-gomes-de-araujo",
       escolaNome: "EE Professor Armando Gomes de Araujo",
-      turmaId: "ee-professor-armando-gomes-de-araujo__3a",
-      turmaNome: "3ºA",
+      turmaId: "ee-professor-armando-gomes-de-araujo__2a",
+      turmaNome: "2ºA",
       ativa: true
     }
   ];
@@ -24,8 +24,9 @@
       competencias: "Comunicação, organização, responsabilidade e trabalho em equipe.",
       escolaId: "ee-professor-armando-gomes-de-araujo",
       escolaNome: "EE Professor Armando Gomes de Araujo",
-      turmaId: "ee-professor-armando-gomes-de-araujo__3a",
-      turmaNome: "3ºA",
+      turmaId: "ee-professor-armando-gomes-de-araujo__2a",
+      turmaNome: "2ºA",
+      professorNome: "Professor Davi",
       statusProcesso: "atual",
       datasEntrevista: [
         "2026-09-04",
@@ -54,8 +55,9 @@
       competencias: "Organização, atenção, responsabilidade e domínio básico de informática.",
       escolaId: "ee-professor-armando-gomes-de-araujo",
       escolaNome: "EE Professor Armando Gomes de Araujo",
-      turmaId: "ee-professor-armando-gomes-de-araujo__3a",
-      turmaNome: "3ºA",
+      turmaId: "ee-professor-armando-gomes-de-araujo__2a",
+      turmaNome: "2ºA",
+      professorNome: "Professor Davi",
       statusProcesso: "proxima",
       datasEntrevista: [],
       baseSistema: true,
