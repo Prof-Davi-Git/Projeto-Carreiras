@@ -6,6 +6,7 @@
   <title>Painel do Professor | Meu Futuro Profissional</title>
   <link rel="stylesheet" href="style.css?v=20260905-1">
   <link rel="stylesheet" href="professor.css?v=20260911-4">
+  <link rel="stylesheet" href="professor-vagas.css?v=20260925-1">
 </head>
 <body>
   <header class="topbar">
@@ -18,8 +19,70 @@
   <main class="container professor-page">
     <section class="page-hero">
       <p class="small-label">PAINEL DO RECRUTADOR</p>
-      <h1>Currículos e entrevistas dos alunos</h1>
-      <p>Visualize os alunos separados por vaga, abra cada lista somente quando precisar e publique as avaliações das entrevistas.</p>
+      <h1>Currículos, entrevistas e vagas</h1>
+      <p>Cadastre oportunidades por turma, acompanhe os currículos enviados e publique as avaliações das entrevistas.</p>
+    </section>
+
+    <section id="professor-vagas-admin" class="panel professor-vagas-admin">
+      <div class="professor-vagas-head">
+        <div>
+          <p class="small-label">GERENCIAR VAGAS</p>
+          <h2>Vagas disponíveis para os alunos</h2>
+          <p>Escolha a escola e a turma. A vaga publicada aparecerá somente para os alunos vinculados àquela turma.</p>
+        </div>
+        <button id="btn-nova-vaga" class="btn btn-primary" type="button" aria-expanded="false">+ Cadastrar nova vaga</button>
+      </div>
+
+      <div id="nova-vaga-wrap" class="professor-vagas-form-wrap" hidden>
+        <form id="form-nova-vaga">
+          <div class="professor-vaga-form-grid">
+            <label>
+              <span>Escola</span>
+              <select id="vaga-escola" required></select>
+            </label>
+            <label>
+              <span>Turma</span>
+              <select id="vaga-turma" required></select>
+            </label>
+            <label>
+              <span>Título da vaga</span>
+              <input id="vaga-titulo" type="text" placeholder="Ex.: Assistente de E-commerce" required>
+            </label>
+            <label>
+              <span>Empresa</span>
+              <input id="vaga-empresa" type="text" placeholder="Ex.: Compra Fácil Online" required>
+            </label>
+            <label>
+              <span>Área</span>
+              <input id="vaga-area" type="text" placeholder="Ex.: Tecnologia" required>
+            </label>
+            <label>
+              <span>Nível</span>
+              <select id="vaga-nivel" required>
+                <option value="Iniciante">Iniciante</option>
+                <option value="Júnior">Júnior</option>
+                <option value="Estágio">Estágio</option>
+              </select>
+            </label>
+            <label class="full">
+              <span>Atividades da vaga</span>
+              <textarea id="vaga-atividades" placeholder="Digite uma atividade por linha." required></textarea>
+            </label>
+            <label class="full">
+              <span>Competências procuradas</span>
+              <textarea id="vaga-competencias" placeholder="Ex.: comunicação, organização, responsabilidade e trabalho em equipe." required></textarea>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button id="btn-salvar-vaga" class="btn btn-primary" type="submit">Publicar vaga para a turma</button>
+            <button id="btn-cancelar-vaga" class="btn btn-secondary" type="button">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <p id="professor-vagas-status" class="professor-vagas-status" hidden></p>
+      <div id="professor-vagas-lista" class="professor-vagas-lista"></div>
     </section>
 
     <section class="panel professor-toolbar">
@@ -46,7 +109,7 @@
     </section>
   </main>
 
-  <script src="firebase-loader.js?v=20260925-1"></script>
+  <script src="firebase-loader.js?v=20260925-2"></script>
   <script src="professor-data-avaliacao.js?v=20260914-2"></script>
   <script src="professor-acordeao.js?v=20260914-2"></script>
   <script src="professor-pdf.js?v=20260918-1"></script>
