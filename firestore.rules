@@ -21,6 +21,24 @@ service cloud.firestore {
         && perfilAtual().data.role == 'aluno';
     }
 
+    function vagaExiste(vagaId) {
+      return vagaId is string
+        && exists(/databases/$(database)/documents/vagas/$(vagaId));
+    }
+
+    function vagaDoProfessor(vagaId) {
+      return professor()
+        && vagaExiste(vagaId)
+        && get(/databases/$(database)/documents/vagas/$(vagaId)).data.professorUid == request.auth.uid;
+    }
+
+    function vagaDaTurmaDoAluno(vagaId) {
+      return aluno()
+        && vagaExiste(vagaId)
+        && perfilAtual().data.turmaId != null
+        && get(/databases/$(database)/documents/vagas/$(vagaId)).data.turmaId == perfilAtual().data.turmaId;
+    }
+
     match /usuarios/{uid} {
       allow read: if logado() && (request.auth.uid == uid || professor());
 
@@ -71,21 +89,39 @@ service cloud.firestore {
     }
 
     match /submissoes/{submissaoId} {
-      allow read: if logado() && (resource.data.alunoUid == request.auth.uid || professor());
+      allow read: if logado() && (
+        resource.data.alunoUid == request.auth.uid
+        || vagaDoProfessor(resource.data.vagaId)
+      );
 
-      allow create: if logado()
-        && request.resource.data.alunoUid == request.auth.uid;
+      allow create: if aluno()
+        && request.resource.data.alunoUid == request.auth.uid
+        && vagaDaTurmaDoAluno(request.resource.data.vagaId);
 
-      allow update: if logado()
+      allow update: if aluno()
         && resource.data.alunoUid == request.auth.uid
-        && request.resource.data.alunoUid == request.auth.uid;
+        && request.resource.data.alunoUid == request.auth.uid
+        && request.resource.data.vagaId == resource.data.vagaId
+        && vagaDaTurmaDoAluno(request.resource.data.vagaId);
 
-      allow delete: if logado() && (resource.data.alunoUid == request.auth.uid || professor());
+      allow delete: if aluno()
+        && resource.data.alunoUid == request.auth.uid;
     }
 
     match /avaliacoes/{avaliacaoId} {
-      allow read: if logado() && (resource.data.alunoUid == request.auth.uid || professor());
-      allow create, update, delete: if professor();
+      allow read: if logado() && (
+        resource.data.alunoUid == request.auth.uid
+        || vagaDoProfessor(resource.data.vagaId)
+      );
+
+      allow create: if vagaDoProfessor(request.resource.data.vagaId)
+        && request.resource.data.professorUid == request.auth.uid;
+
+      allow update: if vagaDoProfessor(resource.data.vagaId)
+        && request.resource.data.vagaId == resource.data.vagaId
+        && request.resource.data.professorUid == request.auth.uid;
+
+      allow delete: if vagaDoProfessor(resource.data.vagaId);
     }
   }
 }
