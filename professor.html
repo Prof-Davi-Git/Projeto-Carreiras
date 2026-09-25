@@ -6,7 +6,7 @@
   <title>Painel do Professor | Meu Futuro Profissional</title>
   <link rel="stylesheet" href="style.css?v=20260905-1">
   <link rel="stylesheet" href="professor.css?v=20260911-4">
-  <link rel="stylesheet" href="professor-vagas.css?v=20260925-1">
+  <link rel="stylesheet" href="professor-vagas.css?v=20260925-2">
 </head>
 <body>
   <header class="topbar">
@@ -20,96 +20,107 @@
     <section class="page-hero">
       <p class="small-label">PAINEL DO RECRUTADOR</p>
       <h1>Currículos, entrevistas e vagas</h1>
-      <p>Cadastre oportunidades por turma, acompanhe os currículos enviados e publique as avaliações das entrevistas.</p>
+      <p>Gerencie as vagas das turmas e acompanhe as avaliações dos alunos em áreas separadas.</p>
     </section>
 
-    <section id="professor-vagas-admin" class="panel professor-vagas-admin">
-      <div class="professor-vagas-head">
-        <div>
-          <p class="small-label">GERENCIAR VAGAS</p>
-          <h2>Vagas disponíveis para os alunos</h2>
-          <p>Escolha a escola e a turma. A vaga publicada aparecerá somente para os alunos vinculados àquela turma.</p>
+    <nav class="professor-abas" aria-label="Áreas do painel">
+      <button id="tab-professor-vagas" class="professor-aba ativa" type="button" data-professor-tab="vagas" aria-selected="true">Vagas</button>
+      <button id="tab-professor-avaliacoes" class="professor-aba" type="button" data-professor-tab="avaliacoes" aria-selected="false">Avaliações das entrevistas</button>
+    </nav>
+
+    <section id="painel-professor-vagas" class="professor-painel-aba">
+      <section id="professor-vagas-admin" class="panel professor-vagas-admin">
+        <div class="professor-vagas-head">
+          <div>
+            <p class="small-label">GERENCIAR VAGAS</p>
+            <h2>Vagas disponíveis para os alunos</h2>
+            <p>Cadastre, edite, exclua e escolha qual vaga deve aparecer como a vaga atual da turma.</p>
+          </div>
+          <button id="btn-nova-vaga" class="btn btn-primary" type="button" aria-expanded="false">+ Cadastrar nova vaga</button>
         </div>
-        <button id="btn-nova-vaga" class="btn btn-primary" type="button" aria-expanded="false">+ Cadastrar nova vaga</button>
-      </div>
 
-      <div id="nova-vaga-wrap" class="professor-vagas-form-wrap" hidden>
-        <form id="form-nova-vaga">
-          <div class="professor-vaga-form-grid">
-            <label>
-              <span>Escola</span>
-              <select id="vaga-escola" required></select>
-            </label>
-            <label>
-              <span>Turma</span>
-              <select id="vaga-turma" required></select>
-            </label>
-            <label>
-              <span>Título da vaga</span>
-              <input id="vaga-titulo" type="text" placeholder="Ex.: Assistente de E-commerce" required>
-            </label>
-            <label>
-              <span>Empresa</span>
-              <input id="vaga-empresa" type="text" placeholder="Ex.: Compra Fácil Online" required>
-            </label>
-            <label>
-              <span>Área</span>
-              <input id="vaga-area" type="text" placeholder="Ex.: Tecnologia" required>
-            </label>
-            <label>
-              <span>Nível</span>
-              <select id="vaga-nivel" required>
-                <option value="Iniciante">Iniciante</option>
-                <option value="Júnior">Júnior</option>
-                <option value="Estágio">Estágio</option>
-              </select>
-            </label>
-            <label class="full">
-              <span>Atividades da vaga</span>
-              <textarea id="vaga-atividades" placeholder="Digite uma atividade por linha." required></textarea>
-            </label>
-            <label class="full">
-              <span>Competências procuradas</span>
-              <textarea id="vaga-competencias" placeholder="Ex.: comunicação, organização, responsabilidade e trabalho em equipe." required></textarea>
-            </label>
-          </div>
+        <div id="nova-vaga-wrap" class="professor-vagas-form-wrap" hidden>
+          <form id="form-nova-vaga">
+            <input id="vaga-edicao-id" type="hidden" value="">
+            <div class="professor-vaga-form-grid">
+              <label>
+                <span>Escola</span>
+                <select id="vaga-escola" required></select>
+              </label>
+              <label>
+                <span>Turma</span>
+                <select id="vaga-turma" required></select>
+              </label>
+              <label>
+                <span>Título da vaga</span>
+                <input id="vaga-titulo" type="text" placeholder="Ex.: Assistente de E-commerce" required>
+              </label>
+              <label>
+                <span>Empresa</span>
+                <input id="vaga-empresa" type="text" placeholder="Ex.: Compra Fácil Online" required>
+              </label>
+              <label>
+                <span>Área</span>
+                <input id="vaga-area" type="text" placeholder="Ex.: Tecnologia" required>
+              </label>
+              <label>
+                <span>Nível</span>
+                <select id="vaga-nivel" required>
+                  <option value="Iniciante">Iniciante</option>
+                  <option value="Júnior">Júnior</option>
+                  <option value="Estágio">Estágio</option>
+                </select>
+              </label>
+              <label class="full">
+                <span>Atividades da vaga</span>
+                <textarea id="vaga-atividades" placeholder="Digite uma atividade por linha." required></textarea>
+              </label>
+              <label class="full">
+                <span>Competências procuradas</span>
+                <textarea id="vaga-competencias" placeholder="Ex.: comunicação, organização, responsabilidade e trabalho em equipe." required></textarea>
+              </label>
+            </div>
 
-          <div class="form-actions">
-            <button id="btn-salvar-vaga" class="btn btn-primary" type="submit">Publicar vaga para a turma</button>
-            <button id="btn-cancelar-vaga" class="btn btn-secondary" type="button">Cancelar</button>
-          </div>
-        </form>
-      </div>
+            <div class="form-actions">
+              <button id="btn-salvar-vaga" class="btn btn-primary" type="submit">Publicar vaga para a turma</button>
+              <button id="btn-cancelar-vaga" class="btn btn-secondary" type="button">Cancelar</button>
+            </div>
+          </form>
+        </div>
 
-      <p id="professor-vagas-status" class="professor-vagas-status" hidden></p>
-      <div id="professor-vagas-lista" class="professor-vagas-lista"></div>
+        <p id="professor-vagas-status" class="professor-vagas-status" hidden></p>
+        <div id="professor-vagas-lista" class="professor-vagas-lista"></div>
+      </section>
     </section>
 
-    <section class="panel professor-toolbar">
-      <div>
-        <strong id="professor-resumo">Carregando processos...</strong>
-        <span>Os dados desta tela vêm do Firestore.</span>
-      </div>
-      <div class="professor-filtros">
-        <input id="professor-busca" type="search" placeholder="Buscar aluno ou vaga...">
-        <select id="professor-status">
-          <option value="todos">Todos</option>
-          <option value="pendente">Pendentes de avaliação</option>
-          <option value="avaliado">Avaliados</option>
-        </select>
-      </div>
-    </section>
+    <section id="painel-professor-avaliacoes" class="professor-painel-aba" hidden>
+      <section class="panel professor-toolbar">
+        <div>
+          <strong id="professor-resumo">Carregando processos...</strong>
+          <span>Currículos enviados e avaliações das entrevistas.</span>
+        </div>
+        <div class="professor-filtros">
+          <input id="professor-busca" type="search" placeholder="Buscar aluno ou vaga...">
+          <select id="professor-status">
+            <option value="todos">Todos</option>
+            <option value="pendente">Pendentes de avaliação</option>
+            <option value="avaliado">Avaliados</option>
+          </select>
+        </div>
+      </section>
 
-    <section id="professor-lista" class="professor-lista"></section>
+      <section id="professor-lista" class="professor-lista"></section>
 
-    <section id="professor-vazio" class="panel empty-state hidden" hidden aria-hidden="true">
-      <span class="badge gray">SEM ENVIOS</span>
-      <h2>Nenhum currículo foi enviado ainda.</h2>
-      <p>Quando os alunos enviarem uma versão de currículo para uma vaga, ela aparecerá aqui.</p>
+      <section id="professor-vazio" class="panel empty-state hidden" hidden aria-hidden="true">
+        <span class="badge gray">SEM ENVIOS</span>
+        <h2>Nenhum currículo foi enviado ainda.</h2>
+        <p>Quando os alunos enviarem uma versão de currículo para uma vaga, ela aparecerá aqui.</p>
+      </section>
     </section>
   </main>
 
-  <script src="firebase-loader.js?v=20260925-2"></script>
+  <script src="firebase-loader.js?v=20260925-3"></script>
+  <script src="professor-tabs.js?v=20260925-1"></script>
   <script src="professor-data-avaliacao.js?v=20260914-2"></script>
   <script src="professor-acordeao.js?v=20260914-2"></script>
   <script src="professor-pdf.js?v=20260918-1"></script>
