@@ -39,7 +39,7 @@
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js");
       await carregar(local("firebase-config.js?v=20260905-1"));
       await carregar(local("alunos-auth.js?v=20260905-1"));
-      await carregar(local("vagas-config.js?v=20260925-1"));
+      await carregar(local("vagas-config.js?v=20260925-2"));
       await carregar(local("firebase-core.js?v=20260925-1"));
 
       const pagina = (location.pathname.split("/").pop() || "index.html").toLowerCase();
@@ -54,9 +54,9 @@
       const versoes = {
         "login.html": "20260925-1",
         "curriculos.html": "20260924-1",
-        "vagas.html": "20260925-2",
+        "vagas.html": "20260925-3",
         "entrevistas.html": "20260918-1",
-        "professor.html": "20260925-5"
+        "professor.html": "20260925-6"
       };
 
       if (scripts[pagina]) {
@@ -64,12 +64,18 @@
       }
 
       if (pagina === "professor.html") {
-        await carregar(local("professor-vagas.js?v=20260925-3"));
-        await carregar(local("professor-alunos.js?v=20260925-2"));
+        await carregar(local("migracao-turma-2a.js?v=20260925-1"));
+        if (window.CARREIRAS_MIGRACAO_TURMA_PRONTA) {
+          await window.CARREIRAS_MIGRACAO_TURMA_PRONTA;
+        }
+        await carregar(local("professor-vagas.js?v=20260925-4"));
+        await carregar(local("professor-alunos.js?v=20260925-3"));
       }
 
       if (pagina === "vagas.html") {
+        carregarEstilo(local("vagas-professores.css?v=20260925-1"));
         await carregar(local("firebase-vagas-estado.js?v=20260925-1"));
+        await carregar(local("firebase-vagas-professores.js?v=20260925-1"));
       }
 
       if (pagina === "curriculos.html" || pagina === "vagas.html") {
