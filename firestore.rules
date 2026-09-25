@@ -5,10 +5,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function perfilAtual() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+    }
+
     function professor() {
       return logado()
         && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
-        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'professor';
+        && perfilAtual().data.role == 'professor';
+    }
+
+    function aluno() {
+      return logado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && perfilAtual().data.role == 'aluno';
     }
 
     match /usuarios/{uid} {
@@ -22,7 +32,13 @@ service cloud.firestore {
         (request.auth.uid == uid
           && resource.data.role == 'aluno'
           && request.resource.data.role == 'aluno'
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ultimoAcessoEm']))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'ultimoAcessoEm',
+            'escolaId',
+            'escolaNome',
+            'turmaId',
+            'turmaNome'
+          ]))
         || professor()
       );
 
@@ -31,6 +47,27 @@ service cloud.firestore {
       match /curriculos/{curriculoId} {
         allow read, write: if logado() && (request.auth.uid == uid || professor());
       }
+    }
+
+    match /vagas/{vagaId} {
+      allow read: if logado() && (
+        (professor() && resource.data.professorUid == request.auth.uid)
+        || (aluno()
+          && perfilAtual().data.turmaId != null
+          && resource.data.turmaId == perfilAtual().data.turmaId)
+      );
+
+      allow create: if professor()
+        && request.resource.data.professorUid == request.auth.uid
+        && request.resource.data.turmaId is string
+        && request.resource.data.titulo is string;
+
+      allow update: if professor()
+        && resource.data.professorUid == request.auth.uid
+        && request.resource.data.professorUid == request.auth.uid;
+
+      allow delete: if professor()
+        && resource.data.professorUid == request.auth.uid;
     }
 
     match /submissoes/{submissaoId} {
