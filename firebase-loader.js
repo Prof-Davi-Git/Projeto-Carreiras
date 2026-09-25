@@ -48,7 +48,7 @@
         "curriculos.html": "firebase-curriculos.js",
         "vagas.html": "firebase-vagas.js",
         "entrevistas.html": "firebase-entrevistas.js",
-        "professor.html": "professor.js"
+        "professor.html": "professor-avaliacoes.js"
       };
 
       const versoes = {
@@ -56,7 +56,7 @@
         "curriculos.html": "20260924-1",
         "vagas.html": "20260925-2",
         "entrevistas.html": "20260918-1",
-        "professor.html": "20260925-4"
+        "professor.html": "20260925-5"
       };
 
       if (scripts[pagina]) {
