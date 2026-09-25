@@ -55,7 +55,7 @@
         "curriculos.html": "20260924-1",
         "vagas.html": "20260924-1",
         "entrevistas.html": "20260918-1",
-        "professor.html": "20260918-1"
+        "professor.html": "20260925-1"
       };
 
       if (scripts[pagina]) {
