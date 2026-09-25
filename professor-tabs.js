@@ -1,14 +1,16 @@
 (() => {
   const botoes = [...document.querySelectorAll("[data-professor-tab]")];
-  const painelVagas = document.querySelector("#painel-professor-vagas");
-  const painelAvaliacoes = document.querySelector("#painel-professor-avaliacoes");
+  const paineis = [...document.querySelectorAll(".professor-painel-aba")];
   const listaAvaliacoes = document.querySelector("#professor-lista");
   const resumo = document.querySelector("#professor-resumo");
 
   function abrirAba(nome) {
-    const vagas = nome === "vagas";
-    if (painelVagas) painelVagas.hidden = !vagas;
-    if (painelAvaliacoes) painelAvaliacoes.hidden = vagas;
+    const alvo = document.querySelector(`#painel-professor-${nome}`);
+    if (!alvo) nome = "vagas";
+
+    paineis.forEach((painel) => {
+      painel.hidden = painel.id !== `painel-professor-${nome}`;
+    });
 
     botoes.forEach((botao) => {
       const ativo = botao.dataset.professorTab === nome;
@@ -23,7 +25,8 @@
     botao.addEventListener("click", () => abrirAba(botao.dataset.professorTab || "vagas"));
   });
 
-  const inicial = location.hash === "#avaliacoes" ? "avaliacoes" : "vagas";
+  const hash = location.hash.replace("#", "");
+  const inicial = ["vagas", "avaliacoes", "alunos"].includes(hash) ? hash : "vagas";
   abrirAba(inicial);
 
   function tituloRemovido(texto) {
@@ -38,7 +41,6 @@
   function atualizarResumoVisivel() {
     if (!resumo || !listaAvaliacoes) return;
     const cards = [...listaAvaliacoes.querySelectorAll(".processo-card")];
-    if (!cards.length) return;
     const avaliados = cards.filter((card) => card.dataset.status === "avaliado").length;
     resumo.textContent = `${cards.length} processo${cards.length === 1 ? "" : "s"} • ${avaliados} avaliado${avaliados === 1 ? "" : "s"}`;
   }
