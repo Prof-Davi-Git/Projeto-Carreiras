@@ -64,7 +64,7 @@
       }
 
       if (pagina === "professor.html") {
-        await carregar(local("professor-vagas.js?v=20260925-2"));
+        await carregar(local("professor-vagas.js?v=20260925-3"));
       }
 
       if (pagina === "vagas.html") {
