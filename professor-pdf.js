@@ -18,11 +18,27 @@
   }
 
   async function esperarApi() {
-    for (let tentativa = 0; tentativa < 80; tentativa += 1) {
+    for (let tentativa = 0; tentativa < 100; tentativa += 1) {
       if (window.FirebaseCarreiras) return window.FirebaseCarreiras;
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 60));
     }
     return null;
+  }
+
+  async function esperarSubmissoes() {
+    if (Array.isArray(window.PROFESSOR_SUBMISSOES)) return window.PROFESSOR_SUBMISSOES;
+    await new Promise((resolve) => {
+      let resolvido = false;
+      const concluir = () => {
+        if (resolvido) return;
+        resolvido = true;
+        window.removeEventListener("professor-avaliacoes-pronto", concluir);
+        resolve();
+      };
+      window.addEventListener("professor-avaliacoes-pronto", concluir, { once: true });
+      setTimeout(concluir, 5000);
+    });
+    return Array.isArray(window.PROFESSOR_SUBMISSOES) ? window.PROFESSOR_SUBMISSOES : [];
   }
 
   async function abrirPdf(api, submissao, botao) {
@@ -52,16 +68,12 @@
         .sort((a, b) => Number(a.indice || 0) - Number(b.indice || 0))
         .map((dados) => dados.conteudo.toUint8Array());
 
-      if (!partes.length || partes.length !== ids.length) {
-        throw new Error("O PDF está incompleto no armazenamento.");
-      }
+      if (!partes.length || partes.length !== ids.length) throw new Error("O PDF está incompleto no armazenamento.");
 
       const blob = new Blob(partes, { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
-
-      if (popup) {
-        popup.location.href = url;
-      } else {
+      if (popup) popup.location.href = url;
+      else {
         const link = document.createElement("a");
         link.href = url;
         link.target = "_blank";
@@ -70,7 +82,6 @@
         link.click();
         link.remove();
       }
-
       setTimeout(() => URL.revokeObjectURL(url), 120000);
     } catch (erro) {
       console.error("Falha ao abrir currículo PDF:", erro);
@@ -92,7 +103,7 @@
   function aplicarNosCards(api, submissoes) {
     lista.querySelectorAll(".processo-card").forEach((card) => {
       if (card.querySelector(".pdf-externo-professor")) return;
-      const submissao = submissoes.find((item) => corresponde(card, item));
+      const submissao = submissoes.find((item) => item.tipoCurriculo === "pdf_externo" && corresponde(card, item));
       if (!submissao) return;
 
       const preview = card.querySelector(".curriculo-preview-professor");
@@ -109,13 +120,10 @@
 
       const titulo = document.createElement("strong");
       titulo.textContent = "Currículo externo em PDF";
-
       const info = document.createElement("span");
       info.style.color = "var(--muted)";
       info.style.fontSize = ".88rem";
-      info.textContent = [submissao.arquivoNome || "curriculo.pdf", tamanho(submissao.arquivoTamanho)]
-        .filter(Boolean)
-        .join(" • ");
+      info.textContent = [submissao.arquivoNome || "curriculo.pdf", tamanho(submissao.arquivoTamanho)].filter(Boolean).join(" • ");
 
       const botao = document.createElement("button");
       botao.type = "button";
@@ -131,25 +139,17 @@
   async function iniciar() {
     const api = await esperarApi();
     if (!api) return;
-
     const sessao = await api.exigirSessao("professor");
     if (!sessao) return;
 
-    const snap = await api.db.collection("submissoes").get();
-    const submissoes = snap.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }))
-      .filter((item) => item.tipoCurriculo === "pdf_externo");
-
-    if (!submissoes.length) return;
-
+    const submissoes = await esperarSubmissoes();
     const aplicar = () => aplicarNosCards(api, submissoes);
     let timer = null;
     const observer = new MutationObserver(() => {
       clearTimeout(timer);
-      timer = setTimeout(aplicar, 60);
+      timer = setTimeout(aplicar, 50);
     });
-
-    observer.observe(lista, { childList: true });
+    observer.observe(lista, { childList: true, subtree: true });
     aplicar();
   }
 
