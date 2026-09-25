@@ -56,7 +56,7 @@
         "curriculos.html": "20260924-1",
         "vagas.html": "20260925-2",
         "entrevistas.html": "20260918-1",
-        "professor.html": "20260925-3"
+        "professor.html": "20260925-4"
       };
 
       if (scripts[pagina]) {
@@ -65,6 +65,7 @@
 
       if (pagina === "professor.html") {
         await carregar(local("professor-vagas.js?v=20260925-3"));
+        await carregar(local("professor-alunos.js?v=20260925-1"));
       }
 
       if (pagina === "vagas.html") {
