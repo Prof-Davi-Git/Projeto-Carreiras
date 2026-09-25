@@ -1,3 +1,34 @@
+.professor-abas {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(20, 32, 51, .04);
+}
+
+.professor-aba {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.professor-aba.ativa {
+  color: var(--primary);
+  background: #edf4ff;
+}
+
+.professor-painel-aba[hidden] {
+  display: none !important;
+}
+
 .professor-vagas-admin {
   margin-bottom: 22px;
 }
@@ -93,6 +124,11 @@
   background: #fff;
 }
 
+.professor-vaga-item.vaga-atual {
+  border-color: #9fd4b7;
+  box-shadow: 0 0 0 3px rgba(24, 121, 78, .07);
+}
+
 .professor-vaga-info h3 {
   margin: 6px 0 2px;
   font-size: 1.02rem;
@@ -142,14 +178,47 @@
 }
 
 .professor-vaga-item-acoes {
+  display: flex;
   flex: 0 0 auto;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.professor-vaga-item-acoes .btn {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.professor-vaga-atual-btn {
+  color: #12603d !important;
+  border-color: #b7e4ca !important;
+  background: #eaf8f1 !important;
+}
+
+.professor-vaga-atual-btn[disabled] {
+  cursor: default;
+  opacity: 1;
+}
+
+.professor-vaga-excluir {
+  color: #b42318 !important;
 }
 
 @media (max-width: 760px) {
+  .professor-abas,
   .professor-vagas-head,
   .professor-vaga-item {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .professor-vaga-item-acoes {
+    justify-content: stretch;
+  }
+
+  .professor-vaga-item-acoes .btn {
+    flex: 1 1 auto;
   }
 
   .professor-vaga-form-grid {
