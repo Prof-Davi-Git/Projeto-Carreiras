@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css?v=20260905-1">
   <link rel="stylesheet" href="professor.css?v=20260911-4">
   <link rel="stylesheet" href="professor-vagas.css?v=20260925-2">
+  <link rel="stylesheet" href="professor-alunos.css?v=20260925-1">
 </head>
 <body>
   <header class="topbar">
@@ -20,12 +21,13 @@
     <section class="page-hero">
       <p class="small-label">PAINEL DO RECRUTADOR</p>
       <h1>Currículos, entrevistas e vagas</h1>
-      <p>Gerencie as vagas das turmas e acompanhe as avaliações dos alunos em áreas separadas.</p>
+      <p>Gerencie vagas, acompanhe avaliações e consulte os alunos e currículos das suas turmas em áreas separadas.</p>
     </section>
 
     <nav class="professor-abas" aria-label="Áreas do painel">
       <button id="tab-professor-vagas" class="professor-aba ativa" type="button" data-professor-tab="vagas" aria-selected="true">Vagas</button>
       <button id="tab-professor-avaliacoes" class="professor-aba" type="button" data-professor-tab="avaliacoes" aria-selected="false">Avaliações das entrevistas</button>
+      <button id="tab-professor-alunos" class="professor-aba" type="button" data-professor-tab="alunos" aria-selected="false">Alunos e currículos</button>
     </nav>
 
     <section id="painel-professor-vagas" class="professor-painel-aba">
@@ -43,44 +45,15 @@
           <form id="form-nova-vaga">
             <input id="vaga-edicao-id" type="hidden" value="">
             <div class="professor-vaga-form-grid">
-              <label>
-                <span>Escola</span>
-                <select id="vaga-escola" required></select>
-              </label>
-              <label>
-                <span>Turma</span>
-                <select id="vaga-turma" required></select>
-              </label>
-              <label>
-                <span>Título da vaga</span>
-                <input id="vaga-titulo" type="text" placeholder="Ex.: Assistente de E-commerce" required>
-              </label>
-              <label>
-                <span>Empresa</span>
-                <input id="vaga-empresa" type="text" placeholder="Ex.: Compra Fácil Online" required>
-              </label>
-              <label>
-                <span>Área</span>
-                <input id="vaga-area" type="text" placeholder="Ex.: Tecnologia" required>
-              </label>
-              <label>
-                <span>Nível</span>
-                <select id="vaga-nivel" required>
-                  <option value="Iniciante">Iniciante</option>
-                  <option value="Júnior">Júnior</option>
-                  <option value="Estágio">Estágio</option>
-                </select>
-              </label>
-              <label class="full">
-                <span>Atividades da vaga</span>
-                <textarea id="vaga-atividades" placeholder="Digite uma atividade por linha." required></textarea>
-              </label>
-              <label class="full">
-                <span>Competências procuradas</span>
-                <textarea id="vaga-competencias" placeholder="Ex.: comunicação, organização, responsabilidade e trabalho em equipe." required></textarea>
-              </label>
+              <label><span>Escola</span><select id="vaga-escola" required></select></label>
+              <label><span>Turma</span><select id="vaga-turma" required></select></label>
+              <label><span>Título da vaga</span><input id="vaga-titulo" type="text" placeholder="Ex.: Assistente de E-commerce" required></label>
+              <label><span>Empresa</span><input id="vaga-empresa" type="text" placeholder="Ex.: Compra Fácil Online" required></label>
+              <label><span>Área</span><input id="vaga-area" type="text" placeholder="Ex.: Tecnologia" required></label>
+              <label><span>Nível</span><select id="vaga-nivel" required><option value="Iniciante">Iniciante</option><option value="Júnior">Júnior</option><option value="Estágio">Estágio</option></select></label>
+              <label class="full"><span>Atividades da vaga</span><textarea id="vaga-atividades" placeholder="Digite uma atividade por linha." required></textarea></label>
+              <label class="full"><span>Competências procuradas</span><textarea id="vaga-competencias" placeholder="Ex.: comunicação, organização, responsabilidade e trabalho em equipe." required></textarea></label>
             </div>
-
             <div class="form-actions">
               <button id="btn-salvar-vaga" class="btn btn-primary" type="submit">Publicar vaga para a turma</button>
               <button id="btn-cancelar-vaga" class="btn btn-secondary" type="button">Cancelar</button>
@@ -117,10 +90,32 @@
         <p>Quando os alunos enviarem uma versão de currículo para uma vaga, ela aparecerá aqui.</p>
       </section>
     </section>
+
+    <section id="painel-professor-alunos" class="professor-painel-aba" hidden>
+      <section class="panel professor-alunos-toolbar">
+        <div class="professor-alunos-intro">
+          <p class="small-label">ALUNOS E CURRÍCULOS</p>
+          <h2>Consultar alunos da turma</h2>
+          <p>Selecione a escola e a turma para visualizar os alunos, o status da conta, as credenciais de acesso e os currículos vinculados a cada vaga.</p>
+        </div>
+        <div class="professor-alunos-filtros">
+          <label><span>Escola</span><select id="alunos-escola"></select></label>
+          <label><span>Turma</span><select id="alunos-turma"></select></label>
+          <label class="alunos-busca"><span>Buscar aluno</span><input id="alunos-busca" type="search" placeholder="Digite o nome do aluno..."></label>
+        </div>
+        <div class="professor-alunos-resumo">
+          <strong id="alunos-resumo">Carregando alunos...</strong>
+          <span>Os currículos ficam fechados por padrão para a lista continuar leve.</span>
+        </div>
+      </section>
+
+      <p id="professor-alunos-status" class="professor-alunos-status" hidden></p>
+      <section id="professor-alunos-lista" class="professor-alunos-lista" aria-live="polite"></section>
+    </section>
   </main>
 
-  <script src="firebase-loader.js?v=20260925-4"></script>
-  <script src="professor-tabs.js?v=20260925-1"></script>
+  <script src="firebase-loader.js?v=20260925-5"></script>
+  <script src="professor-tabs.js?v=20260925-2"></script>
   <script src="professor-data-avaliacao.js?v=20260914-2"></script>
   <script src="professor-acordeao.js?v=20260914-2"></script>
   <script src="professor-pdf.js?v=20260918-1"></script>
