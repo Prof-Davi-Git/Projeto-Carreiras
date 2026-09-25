@@ -1,0 +1,264 @@
+.professor-alunos-toolbar {
+  margin-bottom: 18px;
+}
+
+.professor-alunos-intro h2 {
+  margin: 4px 0 6px;
+}
+
+.professor-alunos-intro p:last-child {
+  margin: 0;
+  color: var(--muted);
+}
+
+.professor-alunos-filtros {
+  display: grid;
+  grid-template-columns: 1.2fr .7fr 1.1fr;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.professor-alunos-filtros label {
+  display: grid;
+  gap: 6px;
+}
+
+.professor-alunos-resumo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.professor-alunos-resumo span {
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.professor-alunos-status {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: #765b00;
+  background: #fff7dc;
+  font-weight: 700;
+}
+
+.professor-alunos-status.erro {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.professor-alunos-status[hidden] {
+  display: none !important;
+}
+
+.professor-alunos-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.professor-aluno-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(20, 32, 51, .04);
+}
+
+.professor-aluno-head {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(360px, 1.3fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.professor-aluno-identidade h3 {
+  margin: 3px 0 4px;
+  font-size: 1.06rem;
+}
+
+.professor-aluno-identidade p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .84rem;
+}
+
+.professor-aluno-status-conta {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #12603d;
+  background: #eaf8f1;
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.professor-aluno-status-conta.offline {
+  color: #5f6b7a;
+  background: #edf1f5;
+}
+
+.professor-aluno-credenciais {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.professor-credencial-item {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #e7ecf2;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.professor-credencial-item span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.professor-credencial-item strong {
+  display: block;
+  overflow: hidden;
+  font-size: .82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.professor-aluno-toggle {
+  min-width: 150px;
+}
+
+.professor-aluno-detalhes {
+  padding: 18px 20px 20px;
+  border-top: 1px solid var(--border);
+  background: #fbfcfe;
+}
+
+.professor-aluno-detalhes[hidden] {
+  display: none !important;
+}
+
+.professor-curriculos-loading,
+.professor-curriculos-vazio {
+  margin: 0;
+  padding: 16px;
+  border-radius: 10px;
+  color: var(--muted);
+  background: #fff;
+  text-align: center;
+}
+
+.professor-curriculos-lista {
+  display: grid;
+  gap: 10px;
+}
+
+.professor-curriculo-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.professor-curriculo-tipo {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #155eef;
+  background: #edf4ff;
+  font-size: .7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.professor-curriculo-tipo.pdf {
+  color: #7a2e0e;
+  background: #fff1eb;
+}
+
+.professor-curriculo-info h4 {
+  margin: 0 0 4px;
+}
+
+.professor-curriculo-info p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.professor-curriculo-vaga {
+  color: #12603d !important;
+  font-weight: 800;
+}
+
+.professor-curriculo-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.professor-curriculo-acoes .btn {
+  min-height: 40px;
+  padding: 9px 12px;
+  font-size: .82rem;
+}
+
+.professor-aluno-sem-conta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+@media (max-width: 1000px) {
+  .professor-aluno-head {
+    grid-template-columns: 1fr auto;
+  }
+
+  .professor-aluno-credenciais {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .professor-alunos-filtros,
+  .professor-aluno-credenciais {
+    grid-template-columns: 1fr;
+  }
+
+  .professor-alunos-resumo,
+  .professor-aluno-head,
+  .professor-curriculo-item {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .professor-curriculo-acoes,
+  .professor-aluno-toggle {
+    width: 100%;
+  }
+
+  .professor-curriculo-acoes .btn {
+    flex: 1 1 100%;
+  }
+}
