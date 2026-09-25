@@ -39,7 +39,8 @@
       await carregar("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js");
       await carregar(local("firebase-config.js?v=20260905-1"));
       await carregar(local("alunos-auth.js?v=20260905-1"));
-      await carregar(local("firebase-core.js?v=20260905-1"));
+      await carregar(local("vagas-config.js?v=20260925-1"));
+      await carregar(local("firebase-core.js?v=20260925-1"));
 
       const pagina = (location.pathname.split("/").pop() || "index.html").toLowerCase();
       const scripts = {
@@ -51,20 +52,24 @@
       };
 
       const versoes = {
-        "login.html": "20260905-1",
+        "login.html": "20260925-1",
         "curriculos.html": "20260924-1",
-        "vagas.html": "20260924-1",
+        "vagas.html": "20260925-1",
         "entrevistas.html": "20260918-1",
-        "professor.html": "20260925-1"
+        "professor.html": "20260925-2"
       };
 
       if (scripts[pagina]) {
         await carregar(local(`${scripts[pagina]}?v=${versoes[pagina] || "20260905-1"}`));
       }
 
+      if (pagina === "professor.html") {
+        await carregar(local("professor-vagas.js?v=20260925-1"));
+      }
+
       if (pagina === "curriculos.html" || pagina === "vagas.html") {
         carregarEstilo(local("envio-vaga.css?v=20260924-1"));
-        await carregar(local("firebase-envio-intuitivo.js?v=20260924-1"));
+        await carregar(local("firebase-envio-intuitivo.js?v=20260925-1"));
       }
     } catch (erro) {
       console.error("Firebase não pôde ser iniciado:", erro);
